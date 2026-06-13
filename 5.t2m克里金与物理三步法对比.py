@@ -10,6 +10,7 @@ import matplotlib.font_manager as fm
 
 warnings.filterwarnings("ignore")
 
+# 设置中文字体
 font_path = '/home/wangzonghan/bisheshuju/fonts/SimHei.ttf'
 fm.fontManager.addfont(font_path)
 custom_font = fm.FontProperties(fname=font_path)
@@ -97,6 +98,9 @@ def main():
     target_lat = dem_ds.lat.values
     h_high = dem_ds['z_high'].clip(min=0)
     
+    # 🌟 新增：计算经纬度范围参数 extent 🌟
+    extent_bounds = [target_lon.min(), target_lon.max(), target_lat.min(), target_lat.max()]
+    
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     
     for scenario_name, hour_index in SCENARIOS.items():
@@ -135,14 +139,16 @@ def main():
         vmin = min(min_3step, min_rk)
         vmax = max(max_3step, max_rk)
         
-        im0 = axes[0].imshow(t_3step_1km, cmap='RdYlBu_r', origin='lower', vmin=vmin, vmax=vmax)
+        # 🌟 修改：加入 extent 参数 🌟
+        im0 = axes[0].imshow(t_3step_1km, cmap='RdYlBu_r', origin='lower', vmin=vmin, vmax=vmax, extent=extent_bounds)
         axes[0].set_title(f"物理三步法降尺度 (Physical 3-Step)\n(Min: {min_3step:.2f}℃)", fontsize=TITLE_FS)
         axes[0].tick_params(labelsize=TICK_FS)
         cb0 = plt.colorbar(im0, ax=axes[0])
         cb0.set_label('温度 (℃)', fontsize=LABEL_FS)
         cb0.ax.tick_params(labelsize=TICK_FS)
         
-        im1 = axes[1].imshow(t_rk_1km, cmap='RdYlBu_r', origin='lower', vmin=vmin, vmax=vmax)
+        # 🌟 修改：加入 extent 参数 🌟
+        im1 = axes[1].imshow(t_rk_1km, cmap='RdYlBu_r', origin='lower', vmin=vmin, vmax=vmax, extent=extent_bounds)
         axes[1].set_title(f"回归克里金插值 (Regression Kriging)\n(Min: {min_rk:.2f}℃)", fontsize=TITLE_FS)
         axes[1].tick_params(labelsize=TICK_FS)
         cb1 = plt.colorbar(im1, ax=axes[1])
@@ -150,12 +156,18 @@ def main():
         cb1.ax.tick_params(labelsize=TICK_FS)
         
         diff_map = t_3step_1km - t_rk_1km
-        im2 = axes[2].imshow(diff_map, cmap='seismic', origin='lower', vmin=-3, vmax=3)
+        # 🌟 修改：加入 extent 参数 🌟
+        im2 = axes[2].imshow(diff_map, cmap='seismic', origin='lower', vmin=-3, vmax=3, extent=extent_bounds)
         axes[2].set_title("空间差异图\n(三步法 - RK法)", fontsize=TITLE_FS)
         axes[2].tick_params(labelsize=TICK_FS)
         cb2 = plt.colorbar(im2, ax=axes[2])
         cb2.set_label('温差 (℃)', fontsize=LABEL_FS)
         cb2.ax.tick_params(labelsize=TICK_FS)
+        
+        # 🌟 新增：为所有子图添加统一的经纬度坐标轴标签 🌟
+        for ax in axes:
+            ax.set_xlabel('经度 (°E)', fontsize=LABEL_FS)
+            ax.set_ylabel('纬度 (°N)', fontsize=LABEL_FS)
         
         plt.tight_layout(rect=[0, 0, 1, 0.92])
         
