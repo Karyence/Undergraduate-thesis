@@ -53,16 +53,16 @@ def batch_predict(model, X, batch_size=20000):
     return np.array(preds)
 
 # =============================================================================
-# 🎨 核心出图模块：生成对比图表
+# 🎨 核心出图模块：生成 SCI 出版级对比图表 
 # =============================================================================
 def generate_academic_figures(agg_df_daily, comp_df_hourly, output_dir):
     print("\n" + "🎨"*30)
-    print("正在生成对比图表 ...")
+    print("正在生成 SCI 出版级对比图表 ...")
     
     os.makedirs(output_dir, exist_ok=True)
     
     # -------------------------------------------------------------------------
-    # 图表 1：对数密度散点图 
+    # 图表 1：对数密度散点图
     # -------------------------------------------------------------------------
     fig, axes = plt.subplots(1, 2, figsize=(14, 6.5), dpi=300)
     
@@ -77,12 +77,9 @@ def generate_academic_figures(agg_df_daily, comp_df_hourly, output_dir):
         N = len(y_t)
         
         h = ax.hist2d(y_t, y_p, bins=100, cmap='jet', norm=LogNorm(), cmin=1)
-        
         cb = fig.colorbar(h[3], ax=ax, fraction=0.046, pad=0.04)
         cb.set_label('数据点密度 (个数)', fontproperties=my_font, fontsize=12)
-        
         ax.plot([0, max_val], [0, max_val], 'k--', lw=2, label='1:1 Line')
-        
         m, b = np.polyfit(y_t, y_p, 1)
         ax.plot(y_t, m*y_t + b, color='red', lw=2, label=f'Fit: y={m:.2f}x+{b:.2f}')
         
@@ -114,6 +111,20 @@ def generate_academic_figures(agg_df_daily, comp_df_hourly, output_dir):
     # -------------------------------------------------------------------------
     fig, axes = plt.subplots(1, 2, figsize=(16, 6), dpi=300)
     
+    # 跨坐标轴绘制置顶数值标签
+    def add_top_level_labels(ax_base, ax_top, bars):
+        for bar in bars:
+            height = bar.get_height()
+            ax_top.annotate(f'{height:.2f}',
+                            xy=(bar.get_x() + bar.get_width() / 2, height),
+                            xytext=(0, 2),  # 向上偏移2个像素
+                            textcoords="offset points",
+                            ha='center', va='bottom',
+                            fontsize=11, fontfamily='serif',
+                            xycoords=ax_base.transData,
+                            zorder=20, # 强制置顶
+                            bbox=dict(boxstyle='round,pad=0.15', facecolor='white', edgecolor='none', alpha=0.85)) 
+    
     # === 子图 (a): 季节对比 ===
     season_names = ['冬季', '春季', '夏季', '秋季']
     rmse_agg_s, rmse_dir_s, rmse_diff_s = [], [], []
@@ -129,19 +140,23 @@ def generate_academic_figures(agg_df_daily, comp_df_hourly, output_dir):
     width = 0.35
     
     ax1 = axes[0]
-    ax1.bar(x - width/2, rmse_agg_s, width, label='小时级训练+日均聚合', color='#1f77b4', edgecolor='black', alpha=0.85)
-    ax1.bar(x + width/2, rmse_dir_s, width, label='直接日均训练', color='#ff7f0e', edgecolor='black', alpha=0.85)
+    bars1_agg = ax1.bar(x - width/2, rmse_agg_s, width, label='小时级训练+日均聚合', color='#1f77b4', edgecolor='black', alpha=0.85)
+    bars1_dir = ax1.bar(x + width/2, rmse_dir_s, width, label='直接日均训练', color='#ff7f0e', edgecolor='black', alpha=0.85)
     ax1.set_ylabel(r'绝对均方根误差 RMSE ($\mu g/m^3$)', fontproperties=my_font, fontsize=14)
     ax1.set_title('(a) 不同季节下的高频追踪误差与精度提升', fontproperties=my_font, fontsize=16, pad=15)
     ax1.set_xticks(x)
     ax1.set_xticklabels(season_names, fontproperties=my_font, fontsize=13)
     ax1.grid(axis='y', linestyle='--', alpha=0.5)
+    ax1.set_ylim(0, max(max(rmse_agg_s), max(rmse_dir_s)) * 1.2)
     
     ax1_twin = ax1.twinx()
-    ax1_twin.plot(x, rmse_diff_s, color='red', marker='D', markersize=8, linewidth=2.5, label='精度提升量 ($\Delta$RMSE)')
+    ax1_twin.plot(x, rmse_diff_s, color='red', marker='D', markersize=8, linewidth=2.5, label='精度提升量 ($\Delta$RMSE)', zorder=10)
     ax1_twin.set_ylabel(r'精度提升量 $\Delta$RMSE ($\mu g/m^3$)', fontproperties=my_font, fontsize=14, color='red')
     ax1_twin.tick_params(axis='y', labelcolor='red')
     ax1_twin.set_ylim(0, max(rmse_diff_s) * 1.5) 
+    
+    add_top_level_labels(ax1, ax1_twin, bars1_agg)
+    add_top_level_labels(ax1, ax1_twin, bars1_dir)
     
     lines_1, labels_1 = ax1.get_legend_handles_labels()
     lines_2, labels_2 = ax1_twin.get_legend_handles_labels()
@@ -165,32 +180,36 @@ def generate_academic_figures(agg_df_daily, comp_df_hourly, output_dir):
     x_l = np.arange(len(labels))
     
     ax2 = axes[1]
-    ax2.bar(x_l - width/2, rmse_agg_l, width, label='小时级训练+日均聚合', color='#1f77b4', edgecolor='black', alpha=0.85)
-    ax2.bar(x_l + width/2, rmse_dir_l, width, label='直接日均训练', color='#d62728', edgecolor='black', alpha=0.85) 
+    bars2_agg = ax2.bar(x_l - width/2, rmse_agg_l, width, label='小时级训练+日均聚合', color='#1f77b4', edgecolor='black', alpha=0.85)
+    bars2_dir = ax2.bar(x_l + width/2, rmse_dir_l, width, label='直接日均训练', color='#ff7f0e', edgecolor='black', alpha=0.85) 
     ax2.set_ylabel(r'绝对均方根误差 RMSE ($\mu g/m^3$)', fontproperties=my_font, fontsize=14)
     ax2.set_title('(b) 不同污染等级下的高频追踪误差与精度提升', fontproperties=my_font, fontsize=16, pad=15)
     ax2.set_xticks(x_l)
     ax2.set_xticklabels(labels, fontproperties=my_font, fontsize=13)
     ax2.grid(axis='y', linestyle='--', alpha=0.5)
+    ax2.set_ylim(0, max(max(rmse_agg_l), max(rmse_dir_l)) * 1.2)
     
     ax2_twin = ax2.twinx()
-    ax2_twin.plot(x_l, rmse_diff_l, color='red', marker='D', markersize=8, linewidth=2.5, label='精度提升量 ($\Delta$RMSE)')
+    ax2_twin.plot(x_l, rmse_diff_l, color='red', marker='D', markersize=8, linewidth=2.5, label='精度提升量 ($\Delta$RMSE)', zorder=10)
     ax2_twin.set_ylabel(r'精度提升量 $\Delta$RMSE ($\mu g/m^3$)', fontproperties=my_font, fontsize=14, color='red')
     ax2_twin.tick_params(axis='y', labelcolor='red')
     ax2_twin.set_ylim(0, max(rmse_diff_l) * 1.3)
     
+    add_top_level_labels(ax2, ax2_twin, bars2_agg)
+    add_top_level_labels(ax2, ax2_twin, bars2_dir)
+    
     for i, txt in enumerate(rmse_diff_l):
-        ax2_twin.annotate(f'+{txt:.2f}', (x_l[i], rmse_diff_l[i]), textcoords="offset points", xytext=(0,10), ha='center', color='red', fontweight='bold')
+        ax2_twin.annotate(f'+{txt:.2f}', (x_l[i], rmse_diff_l[i]), textcoords="offset points", xytext=(0,10), ha='center', color='red', fontweight='bold', zorder=20)
 
     for i, txt in enumerate(rmse_diff_s):
-        ax1_twin.annotate(f'+{txt:.2f}', (x[i], rmse_diff_s[i]), textcoords="offset points", xytext=(0,10), ha='center', color='red', fontweight='bold')
+        ax1_twin.annotate(f'+{txt:.2f}', (x[i], rmse_diff_s[i]), textcoords="offset points", xytext=(0,10), ha='center', color='red', fontweight='bold', zorder=20)
 
     lines_1, labels_1 = ax2.get_legend_handles_labels()
     lines_2, labels_2 = ax2_twin.get_legend_handles_labels()
     ax2.legend(lines_1 + lines_2, labels_1 + labels_2, loc='upper left', prop=my_font, fontsize=11, frameon=True)
 
     plt.tight_layout()
-    bar_path = os.path.join(output_dir, "Fig2_Performance_Improvement_BarChart_CN.png")
+    bar_path = os.path.join(output_dir, "Fig2_Performance_Improvement_BarChart.png")
     plt.savefig(bar_path, bbox_inches='tight')
     plt.close()
     print(f"  ✅ 精度提升条形对比图 已生成: {bar_path}")
@@ -258,60 +277,6 @@ def main():
     
     comp_df_hourly = pd.merge(test_df_hourly, test_df_daily[['date', 'site_code', 'Pred_Direct_Daily']], on=['date', 'site_code'], how='inner')
     agg_df_daily = comp_df_hourly.groupby(['date', 'site_code'])[['pm25_hourly', 'pred_hourly', 'Pred_Direct_Daily']].mean().reset_index()
-
-    # =========================================================================
-    # 控制台日志输出区域 (四大维度)
-    # =========================================================================
-    r2_hr, rmse_hr, mae_hr, _ = calc_metrics(comp_df_hourly['pm25_hourly'].values, comp_df_hourly['pred_hourly'].values)
-    r2_agg, rmse_agg, mae_agg, _ = calc_metrics(agg_df_daily['pm25_hourly'].values, agg_df_daily['pred_hourly'].values)
-    
-    print("\n" + "📊"*3 + " 维度一：时间聚合的数理增益 (证明低通滤波理论)")
-    print("      | 尺度             | R²     | RMSE  | MAE  |")
-    print("      |------------------|--------|-------|------|")
-    print(f"      | 第一步：原生小时 | {r2_hr:.4f} | {rmse_hr:.2f} | {mae_hr:.2f} |")
-    print(f"      | 第二步：日均聚合 | {r2_agg:.4f} | {rmse_agg:.2f} | {mae_agg:.2f} |")
-    print("      💡 结论：物理高频学习叠加数学误差抵消，提升绝非偶然！")
-
-    r2_dir, rmse_dir, mae_dir, nmb_dir = calc_metrics(agg_df_daily['pm25_hourly'].values, agg_df_daily['Pred_Direct_Daily'].values)
-    _, _, _, nmb_agg = calc_metrics(agg_df_daily['pm25_hourly'].values, agg_df_daily['pred_hourly'].values)
-
-    print("\n" + "⚔️"*3 + " 维度二：日尺度整体误差对比 (宏观平稳期假象)")
-    print("      | 模型             | R²     | RMSE  | MAE  | NMB (%) |")
-    print("      |------------------|--------|-------|------|---------|")
-    print(f"      | 小时聚合 (本文)  | {r2_agg:.4f} | {rmse_agg:.2f} | {mae_agg:.2f} | {nmb_agg:+.2f}%  |")
-    print(f"      | 直接日均 (对照组)| {r2_dir:.4f} | {rmse_dir:.2f} | {mae_dir:.2f} | {nmb_dir:+.2f}%  |")
-
-    season_map = {1: '冬季(Winter)', 2: '春季(Spring)', 3: '夏季(Summer)', 4: '秋季(Autumn)'}
-    print("\n" + "🍁"*3 + " 维度三：不同季节日内波动捕捉能力对比 (真实物理追踪)")
-    print("      | 季节 | 指标 | 小时框架模型 | 直接日均模型 | 胜出者 |")
-    print("      |------|------|--------------|--------------|--------|")
-    for s_idx in [1, 2, 3, 4]:
-        s_df = comp_df_hourly[comp_df_hourly['season'] == s_idx]
-        if len(s_df) > 0:
-            yt = s_df['pm25_hourly'].values
-            _, r_a, _, _ = calc_metrics(yt, s_df['pred_hourly'].values)
-            _, r_d, _, _ = calc_metrics(yt, s_df['Pred_Direct_Daily'].values)
-            winner = "聚合大胜！" if r_a < r_d else "日均优"
-            print(f"      | {season_map[s_idx][:2]} | RMSE | {r_a:>12.2f} | {r_d:>12.2f} | {winner} |")
-
-    print("\n" + "☠️"*3 + " 维度四：极端高频污染突发测试 ")
-    bins = [0, 35, 75, 1000]
-    labels = ['优良时段 (<35)', '轻度污染时段 (35-75)', '极端突发时段 (>=75)']
-    comp_df_hourly['Level'] = pd.cut(comp_df_hourly['pm25_hourly'], bins=bins, labels=labels, right=False)
-    
-    print("      | 高频时段等级 (μg/m³) | 小时样本数 | 指标 | 小时框架模型 | 直接日均模型 | 差异说明 |")
-    print("      |----------------------|------------|------|--------------|--------------|----------|")
-    for lvl in labels:
-        l_df = comp_df_hourly[comp_df_hourly['Level'] == lvl]
-        if len(l_df) > 0:
-            yt = l_df['pm25_hourly'].values
-            _, r_a, _, _ = calc_metrics(yt, l_df['pred_hourly'].values)
-            _, r_d, _, _ = calc_metrics(yt, l_df['Pred_Direct_Daily'].values)
-            diff = r_d - r_a
-            diff_str = f"你的模型完胜，少错 {diff:.2f}！" if diff > 0 else f"直接日均胜出 {-diff:.2f}"
-            print(f"      | {lvl:<18} | {len(l_df):>10} | RMSE | {r_a:>12.2f} | {r_d:>12.2f} | {diff_str} |")
-    
-    print("="*85)
 
     # =========================================================================
     # 🎯 调用核心绘图模块，生成 SCI 级别可视化
