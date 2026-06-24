@@ -148,7 +148,7 @@ def main():
     ax.bar(x - width/2, rf_rmses, width, label='原始随机森林模型 (RF)', color='#1f77b4', edgecolor='black', alpha=0.85)
     ax.bar(x + width/2, idw_rmses, width, label='混合残差校正模型 (RF-IDW)', color='#2ca02c', edgecolor='black', alpha=0.85)
 
-    ax.set_ylabel(r'模型预测绝对误差 RMSE ($\mu g/m^3$)', fontproperties=my_font, fontsize=14)
+    ax.set_ylabel(r'模型预测 RMSE ($\mu g/m^3$)', fontproperties=my_font, fontsize=14)
     ax.set_title('空间独立框架下多区域残差校正验证', fontproperties=my_font, fontsize=16, pad=15)
     ax.set_xticks(x)
     ax.set_xticklabels(labels, fontproperties=my_font, fontsize=13)
