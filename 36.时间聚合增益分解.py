@@ -57,7 +57,7 @@ def batch_predict(model, X, batch_size=20000):
 # =============================================================================
 def generate_academic_figures(agg_df_daily, comp_df_hourly, output_dir):
     print("\n" + "🎨"*30)
-    print("正在生成 SCI 出版级对比图表 ...")
+    print("正在生成学术出版级对比图表 ...")
     
     os.makedirs(output_dir, exist_ok=True)
     
@@ -78,7 +78,6 @@ def generate_academic_figures(agg_df_daily, comp_df_hourly, output_dir):
         
         h = ax.hist2d(y_t, y_p, bins=100, cmap='jet', norm=LogNorm(), cmin=1)
         cb = fig.colorbar(h[3], ax=ax, fraction=0.046, pad=0.04)
-        # 保留中文颜色条标签和字体设置
         cb.set_label('数据点密度 (个数)', fontproperties=my_font, fontsize=12)
         ax.plot([0, max_val], [0, max_val], 'k--', lw=2, label='1:1 Line')
         m, b = np.polyfit(y_t, y_p, 1)
@@ -89,9 +88,8 @@ def generate_academic_figures(agg_df_daily, comp_df_hourly, output_dir):
         ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=12,
                 verticalalignment='top', bbox=props, family='serif')
         
-        # 修改1：标题改为左对齐，保留 fontproperties
+        # 方案A：子图标题仅保留精简的 (a) 和 (b) 标号，实现极致干练的顶刊留白风格
         ax.set_title(title, loc='left', fontproperties=my_font, fontsize=15, pad=15)
-        # 修改2：坐标轴标签微调，将“真实”改为更学术的“实测”，并精简文字
         ax.set_xlabel(r'实测 PM$_{2.5}$ 浓度 ($\mu g/m^3$)', fontproperties=my_font, fontsize=13)
         ax.set_ylabel(r'预测 PM$_{2.5}$ 浓度 ($\mu g/m^3$)', fontproperties=my_font, fontsize=13)
         ax.set_xlim(0, max_val)
@@ -100,33 +98,32 @@ def generate_academic_figures(agg_df_daily, comp_df_hourly, output_dir):
         ax.grid(True, linestyle=':', alpha=0.6)
         ax.legend(loc='lower right', frameon=True, edgecolor='black', prop=my_font, fontsize=10)
 
-    # 修改3：传入的标题直接改为带 (a) 和 (b) 的精简中文学术标号
-    plot_density_scatter(axes[0], y_true, y_agg, '(a) 小时级训练-日尺度聚合')
-    plot_density_scatter(axes[1], y_true, y_dir, '(b) 直接日均训练')
+    # 传入纯标号 (a) 和 (b)
+    plot_density_scatter(axes[0], y_true, y_agg, '(a)')
+    plot_density_scatter(axes[1], y_true, y_dir, '(b)')
     
     plt.tight_layout()
     scatter_path = os.path.join(output_dir, "Fig1_Scatter_Density_Comparison.png")
     plt.savefig(scatter_path, bbox_inches='tight')
     plt.close()
-    print(f"  ✅ 全中文对数密度散点图 已生成: {scatter_path}")
+    print(f"  ✅ 极简风对数密度散点图 已生成: {scatter_path}")
 
     # -------------------------------------------------------------------------
     # 图表 2：不同季节与污染等级下的 RMSE 精度提升双子图 
     # -------------------------------------------------------------------------
     fig, axes = plt.subplots(1, 2, figsize=(16, 6), dpi=300)
     
-    # 跨坐标轴绘制置顶数值标签
     def add_top_level_labels(ax_base, ax_top, bars):
         for bar in bars:
             height = bar.get_height()
             ax_top.annotate(f'{height:.2f}',
                             xy=(bar.get_x() + bar.get_width() / 2, height),
-                            xytext=(0, 2),  # 向上偏移2个像素
+                            xytext=(0, 2), 
                             textcoords="offset points",
                             ha='center', va='bottom',
                             fontsize=11, fontfamily='serif',
                             xycoords=ax_base.transData,
-                            zorder=20, # 强制置顶
+                            zorder=20, 
                             bbox=dict(boxstyle='round,pad=0.15', facecolor='white', edgecolor='none', alpha=0.85)) 
     
     # === 子图 (a): 季节对比 ===
@@ -147,7 +144,7 @@ def generate_academic_figures(agg_df_daily, comp_df_hourly, output_dir):
     bars1_agg = ax1.bar(x - width/2, rmse_agg_s, width, label='小时级训练+日均聚合', color='#1f77b4', edgecolor='black', alpha=0.85)
     bars1_dir = ax1.bar(x + width/2, rmse_dir_s, width, label='直接日均训练', color='#ff7f0e', edgecolor='black', alpha=0.85)
     ax1.set_ylabel(r'绝对均方根误差 RMSE ($\mu g/m^3$)', fontproperties=my_font, fontsize=14)
-    ax1.set_title('(a) 不同季节下的高频追踪误差与精度提升', fontproperties=my_font, fontsize=16, pad=15)
+    ax1.set_title('(a)', loc='left', fontproperties=my_font, fontsize=16, pad=15)
     ax1.set_xticks(x)
     ax1.set_xticklabels(season_names, fontproperties=my_font, fontsize=13)
     ax1.grid(axis='y', linestyle='--', alpha=0.5)
@@ -187,7 +184,7 @@ def generate_academic_figures(agg_df_daily, comp_df_hourly, output_dir):
     bars2_agg = ax2.bar(x_l - width/2, rmse_agg_l, width, label='小时级训练+日均聚合', color='#1f77b4', edgecolor='black', alpha=0.85)
     bars2_dir = ax2.bar(x_l + width/2, rmse_dir_l, width, label='直接日均训练', color='#ff7f0e', edgecolor='black', alpha=0.85) 
     ax2.set_ylabel(r'绝对均方根误差 RMSE ($\mu g/m^3$)', fontproperties=my_font, fontsize=14)
-    ax2.set_title('(b) 不同污染等级下的高频追踪误差与精度提升', fontproperties=my_font, fontsize=16, pad=15)
+    ax2.set_title('(b)', loc='left', fontproperties=my_font, fontsize=16, pad=15)
     ax2.set_xticks(x_l)
     ax2.set_xticklabels(labels, fontproperties=my_font, fontsize=13)
     ax2.grid(axis='y', linestyle='--', alpha=0.5)
@@ -227,9 +224,6 @@ def main():
     print("🚀 启动：时间聚合增益四大维度全解构")
     print("="*85)
     
-    # -------------------------------------------------------------------------
-    # 1. 严格时间特征与数据加载
-    # -------------------------------------------------------------------------
     df_hourly = pd.read_parquet(DATA_FILE)
     if 'month' not in df_hourly.columns:
         df_hourly['date'] = pd.to_datetime(df_hourly['date'])
@@ -260,31 +254,22 @@ def main():
     
     test_df_daily = df_daily[df_daily['site_code'].isin(test_sites)].copy()
 
-    # -------------------------------------------------------------------------
-    # 2. 推理预测 
-    # -------------------------------------------------------------------------
     print("\n[2/4] 执行独立测试集推理...")
     hr_model = joblib.load(HOURLY_MODEL_PATH)
     test_df_hourly['pred_hourly'] = batch_predict(hr_model, test_df_hourly[joblib.load(HOURLY_FEAT_PATH)].astype('float32').values)
     del hr_model
     gc.collect()
 
+    data_dir = os.path.dirname(DATA_FILE)
     dy_model = joblib.load(DAILY_MODEL_PATH)
     test_df_daily['Pred_Direct_Daily'] = batch_predict(dy_model, test_df_daily[joblib.load(DAILY_FEAT_PATH)].astype('float32').values)
     del dy_model
     gc.collect()
 
-    # -------------------------------------------------------------------------
-    # 3. 数据融合
-    # -------------------------------------------------------------------------
     print("\n[3/4] 正在构建微观小时级与宏观日均级比较...")
-    
     comp_df_hourly = pd.merge(test_df_hourly, test_df_daily[['date', 'site_code', 'Pred_Direct_Daily']], on=['date', 'site_code'], how='inner')
     agg_df_daily = comp_df_hourly.groupby(['date', 'site_code'])[['pm25_hourly', 'pred_hourly', 'Pred_Direct_Daily']].mean().reset_index()
 
-    # =========================================================================
-    # 🎯 调用核心绘图模块，生成 SCI 级别可视化
-    # =========================================================================
     OUTPUT_DIR = f"{BASE_DIR}/Results/Figures_时间聚合增益大考"
     generate_academic_figures(agg_df_daily, comp_df_hourly, OUTPUT_DIR)
 
