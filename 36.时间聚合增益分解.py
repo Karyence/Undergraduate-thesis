@@ -141,7 +141,7 @@ def generate_academic_figures(agg_df_daily, comp_df_hourly, output_dir):
     width = 0.35
     
     ax1 = axes[0]
-    bars1_agg = ax1.bar(x - width/2, rmse_agg_s, width, label='小时级训练+日均聚合', color='#1f77b4', edgecolor='black', alpha=0.85)
+    bars1_agg = ax1.bar(x - width/2, rmse_agg_s, width, label='小时级训练-日尺度聚合', color='#1f77b4', edgecolor='black', alpha=0.85)
     bars1_dir = ax1.bar(x + width/2, rmse_dir_s, width, label='直接日均训练', color='#ff7f0e', edgecolor='black', alpha=0.85)
     ax1.set_ylabel(r'绝对均方根误差 RMSE ($\mu g/m^3$)', fontproperties=my_font, fontsize=14)
     ax1.set_title('(a)', loc='left', fontproperties=my_font, fontsize=16, pad=15)
@@ -181,7 +181,7 @@ def generate_academic_figures(agg_df_daily, comp_df_hourly, output_dir):
     x_l = np.arange(len(labels))
     
     ax2 = axes[1]
-    bars2_agg = ax2.bar(x_l - width/2, rmse_agg_l, width, label='小时级训练+日均聚合', color='#1f77b4', edgecolor='black', alpha=0.85)
+    bars2_agg = ax2.bar(x_l - width/2, rmse_agg_l, width, label='小时级训练-日尺度聚合', color='#1f77b4', edgecolor='black', alpha=0.85)
     bars2_dir = ax2.bar(x_l + width/2, rmse_dir_l, width, label='直接日均训练', color='#ff7f0e', edgecolor='black', alpha=0.85) 
     ax2.set_ylabel(r'绝对均方根误差 RMSE ($\mu g/m^3$)', fontproperties=my_font, fontsize=14)
     ax2.set_title('(b)', loc='left', fontproperties=my_font, fontsize=16, pad=15)
