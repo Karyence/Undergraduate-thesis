@@ -78,6 +78,7 @@ def generate_academic_figures(agg_df_daily, comp_df_hourly, output_dir):
         
         h = ax.hist2d(y_t, y_p, bins=100, cmap='jet', norm=LogNorm(), cmin=1)
         cb = fig.colorbar(h[3], ax=ax, fraction=0.046, pad=0.04)
+        # 保留中文颜色条标签和字体设置
         cb.set_label('数据点密度 (个数)', fontproperties=my_font, fontsize=12)
         ax.plot([0, max_val], [0, max_val], 'k--', lw=2, label='1:1 Line')
         m, b = np.polyfit(y_t, y_p, 1)
@@ -88,17 +89,20 @@ def generate_academic_figures(agg_df_daily, comp_df_hourly, output_dir):
         ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=12,
                 verticalalignment='top', bbox=props, family='serif')
         
-        ax.set_title(title, fontproperties=my_font, fontsize=15, pad=15)
-        ax.set_xlabel(r'真实 PM$_{2.5}$ 浓度 ($\mu g/m^3$)', fontproperties=my_font, fontsize=13)
-        ax.set_ylabel(r'模型预测 PM$_{2.5}$ 浓度 ($\mu g/m^3$)', fontproperties=my_font, fontsize=13)
+        # 修改1：标题改为左对齐，保留 fontproperties
+        ax.set_title(title, loc='left', fontproperties=my_font, fontsize=15, pad=15)
+        # 修改2：坐标轴标签微调，将“真实”改为更学术的“实测”，并精简文字
+        ax.set_xlabel(r'实测 PM$_{2.5}$ 浓度 ($\mu g/m^3$)', fontproperties=my_font, fontsize=13)
+        ax.set_ylabel(r'预测 PM$_{2.5}$ 浓度 ($\mu g/m^3$)', fontproperties=my_font, fontsize=13)
         ax.set_xlim(0, max_val)
         ax.set_ylim(0, max_val)
         ax.set_aspect('equal', adjustable='box')
         ax.grid(True, linestyle=':', alpha=0.6)
         ax.legend(loc='lower right', frameon=True, edgecolor='black', prop=my_font, fontsize=10)
 
-    plot_density_scatter(axes[0], y_true, y_agg, '独立测试集预测表现 (小时级训练+日均聚合模型)')
-    plot_density_scatter(axes[1], y_true, y_dir, '独立测试集预测表现 (直接日均训练模型)')
+    # 修改3：传入的标题直接改为带 (a) 和 (b) 的精简中文学术标号
+    plot_density_scatter(axes[0], y_true, y_agg, '(a) 小时级训练-日尺度聚合')
+    plot_density_scatter(axes[1], y_true, y_dir, '(b) 直接日均训练')
     
     plt.tight_layout()
     scatter_path = os.path.join(output_dir, "Fig1_Scatter_Density_Comparison.png")
