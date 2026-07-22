@@ -137,9 +137,9 @@ def main():
 
     # 绘制真实值与预测值折线
     ax.plot(episode_df['datetime'], episode_df['pm25_hourly'], 
-            color='black', linewidth=2.5, label='地面基站真实观测值 (True)', zorder=4)
+            color='black', linewidth=2.5, label='站点实测值 (Observed)', zorder=4)
     ax.plot(episode_df['datetime'], episode_df['pred_pm25'], 
-            color='#D9383A', linewidth=2.5, linestyle='--', label='随机森林模型反演值 (Predict)', zorder=5)
+            color='#D9383A', linewidth=2.5, linestyle='--', label='RF预测值 (Predicted)', zorder=5)
 
     # 绘制国家空气质量标准 AQI 背景色阶带 
     ax.axhspan(0, 35, facecolor='#A8E6CF', alpha=0.3, zorder=1, label='优 (0-35)')
@@ -159,12 +159,8 @@ def main():
     plt.xticks(rotation=0)
 
     # 设置标签与标题
-    ax.set_ylabel('PM$_{2.5}$ 质量浓度 ($\\mu g/m^3$)', fontproperties=my_font, fontsize=14)
+    ax.set_ylabel('PM$_{2.5}$ 浓度 ($\\mu g/m^3$)', fontproperties=my_font, fontsize=14)
     ax.set_xlabel('日期与时间 (Date & Time)', fontproperties=my_font, fontsize=14)
-    ax.set_title(f'独立测试集代表性站点 ({target_city} - {target_site}) 冬季极端重污染过程动态捕捉分析\n'
-                 f'时段: {start_time.strftime("%Y-%m-%d")} 至 {end_time.strftime("%Y-%m-%d")}', 
-                 fontproperties=my_font, fontsize=18, weight='bold', pad=15)
-
     ax.grid(True, linestyle=':', alpha=0.6, zorder=2)
     
     # 调整图例位置，避免遮挡曲线
