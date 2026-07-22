@@ -15,6 +15,11 @@ from scipy.spatial import cKDTree
 from scipy.interpolate import griddata
 import warnings
 import gc  
+try:
+    import rmm
+    rmm.reinitialize(managed_memory=True)
+except ImportError:
+    pass
 
 warnings.filterwarnings("ignore")
 
@@ -101,9 +106,6 @@ def main():
     print("="*80)
     
     fig = plt.figure(figsize=(20, 26), dpi=300) 
-    fig.suptitle('长三角 1km 混合模型 (RF+IDW) 空间校正演变图 (2025年1-12月)', 
-                 fontproperties=my_font, fontsize=36, weight='bold', y=0.94)
-                 
     sm_bg = None; sm_scatter = None
 
     for idx, target_month in enumerate(TARGET_MONTHS):
@@ -131,8 +133,26 @@ def main():
             grid_df = pd.read_parquet(daily_file)
             X_grid = grid_df[best_features].astype('float32')
             
-            # 2. 全场小时预测
-            grid_df['pred_hourly'] = best_rf_model.predict(X_grid)
+            # 🌟 新增：剥离 Pandas 外衣，直接使用底层的 numpy 矩阵，切片时不产生额外内存复制
+            X_grid_np = X_grid.values 
+            
+            # 2. 全场小时预测 (极速分块版)
+            batch_size = 200000  # 进一步缩减单批次大小至 20 万行，对 GPU 毫无压力
+            preds_list = []
+            
+            for i in range(0, len(X_grid_np), batch_size):
+                batch_input = X_grid_np[i : i + batch_size]
+                batch_pred = best_rf_model.predict(batch_input)
+                
+                # 安全拉回系统内存
+                if hasattr(batch_pred, 'get'):
+                    batch_pred = batch_pred.get()
+                elif hasattr(batch_pred, 'to_numpy'):
+                    batch_pred = batch_pred.to_numpy()
+                    
+                preds_list.append(batch_pred)
+            
+            grid_df['pred_hourly'] = np.concatenate(preds_list)
             
             # 3. 空间折叠降维为日均场 (72万行)
             daily_grid = grid_df.groupby(['lon', 'lat'])['pred_hourly'].mean().reset_index()
@@ -269,18 +289,18 @@ def main():
     # =============================================================================
     print("\n -> [4/4] 正在生成全局统一色标并输出最终大图...")
     
-    plt.subplots_adjust(left=0.06, right=0.88, bottom=0.16, top=0.90, wspace=0.08, hspace=0.12)
+    plt.subplots_adjust(left=0.06, right=0.88, bottom=0.16, top=0.95, wspace=0.08, hspace=0.12)
     
     if sm_bg is not None:
         cbar_ax1 = fig.add_axes([0.15, 0.06, 0.45, 0.015])
         cbar1 = fig.colorbar(sm_bg, cax=cbar_ax1, orientation='horizontal')
-        cbar1.set_label(r'【背景底图】长三角 1km 混合反演预测月均 PM$_{2.5}$ 浓度 ($\mu g/m^3$)', fontproperties=my_font, fontsize=24, weight='bold')
+        cbar1.set_label(r'【背景底图】PM$_{2.5}$ 月均反演预测浓度 ($\mu g/m^3$)', fontproperties=my_font, fontsize=24, weight='bold')
         cbar1.ax.tick_params(labelsize=18)
     
     if sm_scatter is not None:
         cbar_ax2 = fig.add_axes([0.91, 0.16, 0.015, 0.7])
         cbar2 = fig.colorbar(sm_scatter, cax=cbar_ax2, orientation='vertical')
-        cbar2.set_label(r'【圆圈站点】独立测试站点真实观测 PM$_{2.5}$ 浓度 ($\mu g/m^3$)', fontproperties=my_font, fontsize=24, weight='bold')
+        cbar2.set_label(r'【圆圈站点】PM$_{2.5}$ 独立真实观测浓度 ($\mu g/m^3$)', fontproperties=my_font, fontsize=24, weight='bold')
         cbar2.ax.tick_params(labelsize=18)
 
     valid_marker = mlines.Line2D([], [], color='white', marker='o', markerfacecolor='white', 
