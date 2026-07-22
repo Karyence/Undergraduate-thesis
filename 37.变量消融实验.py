@@ -68,12 +68,13 @@ def run_ablation_experiments(train_df, test_df, base_features):
     print("\n" + "="*80)
     print("🚀 [2/3] 启动核心消融实验 ...")
     
+    # 核心修改1：精准匹配正文术语，替换原先的口语化描述
     experiments = {
-        'Baseline': {'desc': '完整多频率特征', 'drop': []},
-        'No_AOD': {'desc': '去除卫星 AOD', 'drop': ['AOD']},
-        'No_Hourly_Met': {'desc': '去除小时气象动力场', 'drop': ['ERA5_BLH', 'ERA5_T2M', 'ERA5_D2M', 'ERA5_WIND', 'ERA5_TP']}, 
-        'No_Static': {'desc': '去除静态地理信息', 'drop': ['DEM', 'Slope', 'POP'] + [f for f in base_features if f.startswith('LC_')]},
-        'No_Time': {'desc': '去除动态时间周期', 'drop': ['hour', 'month', 'season', 'day_of_week', 'is_weekend', 'is_holiday']}
+        'Baseline': {'desc': '完整特征\n(Baseline)', 'drop': []},
+        'No_AOD': {'desc': '剥离日尺度\nAOD', 'drop': ['AOD']},
+        'No_Hourly_Met': {'desc': '剥离逐小时\n气象要素', 'drop': ['ERA5_BLH', 'ERA5_T2M', 'ERA5_D2M', 'ERA5_WIND', 'ERA5_TP']}, 
+        'No_Static': {'desc': '剥离静态\n地理变量', 'drop': ['DEM', 'Slope', 'POP'] + [f for f in base_features if f.startswith('LC_')]},
+        'No_Time': {'desc': '剥离动态\n时序特征', 'drop': ['hour', 'month', 'season', 'day_of_week', 'is_weekend', 'is_holiday']}
     }
 
     results = []
@@ -81,14 +82,12 @@ def run_ablation_experiments(train_df, test_df, base_features):
     y_test = test_df['pm25_hourly'].values
 
     for exp_name, setup in experiments.items():
-        print(f"\n  ▶ 正在执行 [{setup['desc']}]...")
+        print(f"\n  ▶ 正在执行 [{setup['desc'].replace(chr(10), ' ')}]...")
         current_features = [f for f in base_features if f not in setup['drop']]
-        print(f"    (当前入模特征数量: {len(current_features)})")
         
         X_tr = train_df[current_features].copy()
         X_te = test_df[current_features].copy()
 
-        # 保持公平的最优主模型参数
         model = RandomForestRegressor(n_estimators=200, max_depth=22, max_features=0.6, 
                                       min_samples_split=2, random_state=42, n_jobs=-1)
         model.fit(X_tr.values, y_train)
@@ -115,7 +114,7 @@ def plot_ablation_results(res_df):
     print("\n" + "="*80)
     print("🎨 [3/3] 正在生成消融实验对比图...")
     
-    fig, ax1 = plt.subplots(figsize=(13, 7), dpi=300)
+    fig, ax1 = plt.subplots(figsize=(12, 6.5), dpi=300)
     
     x = np.arange(len(res_df))
     width = 0.5
@@ -126,47 +125,50 @@ def plot_ablation_results(res_df):
     colors = ['#1f77b4', '#d62728', '#ff7f0e', '#2ca02c', '#9467bd']
     bars = ax1.bar(x, res_df['RMSE'], width, color=colors, edgecolor='black', alpha=0.85)
     
-    ax1.set_ylabel(r'模型预测绝对误差 RMSE ($\mu g/m^3$)', fontproperties=my_font, fontsize=15)
+    ax1.set_ylabel(r'模型预测绝对误差 RMSE ($\mu g/m^3$)', fontproperties=my_font, fontsize=14)
     ax1.set_xticks(x)
-    # 标签换行，防止挤压
-    labels = [desc.replace(' ', '\n') for desc in res_df['Experiment']]
-    ax1.set_xticklabels(labels, fontproperties=my_font, fontsize=13)
-    ax1.set_ylim(0, max(res_df['RMSE']) * 1.25)
+    ax1.set_xticklabels(res_df['Experiment'], fontproperties=my_font, fontsize=13)
+    
+    # 核心修改1：大幅抬高左轴上限，将柱状图整体“压”到底部 65% 的区域
+    ax1.set_ylim(0, max(res_df['RMSE']) * 1.55) 
     ax1.grid(axis='y', linestyle='--', alpha=0.5)
 
     for i, bar in enumerate(bars):
         height = bar.get_height()
+        # 基础 RMSE 写在柱体紧上方
         ax1.annotate(f'{height:.2f}', xy=(bar.get_x() + bar.get_width() / 2, height),
-                    xytext=(0, 3), textcoords="offset points", ha='center', va='bottom',
+                    xytext=(0, 4), textcoords="offset points", ha='center', va='bottom',
                     fontsize=12, fontweight='bold', fontfamily='serif')
+        # 红色增益 (+X.XX) 放在最顶端
         if i > 0:
             inc = res_df.iloc[i]['RMSE_Increase']
-            ax1.annotate(f'+{inc:.2f}', xy=(bar.get_x() + bar.get_width() / 2, height + 0.8),
-                        xytext=(0, 15), textcoords="offset points", ha='center', va='bottom',
+            ax1.annotate(f'+{inc:.2f}', xy=(bar.get_x() + bar.get_width() / 2, height),
+                        xytext=(0, 22), textcoords="offset points", ha='center', va='bottom',
                         fontsize=12, color='red', fontweight='bold', fontfamily='serif')
 
     ax2 = ax1.twinx()
     ax2.plot(x, res_df['R2'], color='black', marker='o', markersize=8, linewidth=2.5, linestyle='--', label='决定系数 ($R^2$)')
-    ax2.set_ylabel(r'模型拟合度决定系数 ($R^2$)', fontproperties=my_font, fontsize=15)
-    # 动态调整右轴下界，让折线不要贴底
-    ax2.set_ylim(min(res_df['R2']) - 0.05, 1.0)
+    ax2.set_ylabel(r'模型拟合度决定系数 ($R^2$)', fontproperties=my_font, fontsize=14)
     
+    # 核心修改2：压低右轴下限，将折线整体“抬”到顶部区域，彻底错开双轴的物理相交空间
+    ax2.set_ylim(min(res_df['R2']) - 0.15, max(res_df['R2']) + 0.15)
+    
+    # 核心修改3：R2标签统一放在折点正上方，并加深白底不透明度，即使落入柱子内部也能完美阅读
     for i, r2_val in enumerate(res_df['R2']):
         ax2.annotate(f'{r2_val:.3f}', xy=(x[i], r2_val), xytext=(0, 10), textcoords="offset points",
-                     ha='center', va='bottom', fontsize=12, fontfamily='serif')
+                     ha='center', va='bottom', fontsize=12, fontfamily='serif',
+                     bbox=dict(boxstyle='round,pad=0.2', facecolor='white', edgecolor='none', alpha=0.95))
 
-    ax1.set_title('长三角多频率特征融合消融实验综合评估 (Ablation Study)', fontproperties=my_font, fontsize=17, pad=20)
-    
-    # 合并双轴图例
+    # 合并双轴图例并微调位置
     lines_1, labels_1 = ax1.get_legend_handles_labels()
     lines_2, labels_2 = ax2.get_legend_handles_labels()
-    ax1.legend(lines_1 + lines_2, labels_1 + labels_2, loc='upper left', prop=my_font, fontsize=12, frameon=True)
+    ax1.legend(lines_1 + lines_2, labels_1 + labels_2, loc='upper left', prop=my_font, fontsize=11, frameon=True)
 
     plt.tight_layout()
     save_path = os.path.join(OUTPUT_DIR, "Fig3_Ablation_Study_BarChart.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.close()
-    print(f"  ✅ 完美！全中文消融实验条形图已保存至: {save_path}")
+    print(f"  ✅ 完美！错位防遮挡版学术图已保存至: {save_path}")
     print("="*80)
 
 if __name__ == "__main__":
