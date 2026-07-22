@@ -11,6 +11,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.font_manager import FontProperties
 from sklearn.ensemble import RandomForestRegressor
+from matplotlib.patches import Patch
+from matplotlib.lines import Line2D
 
 warnings.filterwarnings("ignore")
 
@@ -68,7 +70,6 @@ def run_ablation_experiments(train_df, test_df, base_features):
     print("\n" + "="*80)
     print("🚀 [2/3] 启动核心消融实验 ...")
     
-    # 核心修改1：精准匹配正文术语，替换原先的口语化描述
     experiments = {
         'Baseline': {'desc': '完整特征\n(Baseline)', 'drop': []},
         'No_AOD': {'desc': '剥离日尺度\nAOD', 'drop': ['AOD']},
@@ -129,17 +130,15 @@ def plot_ablation_results(res_df):
     ax1.set_xticks(x)
     ax1.set_xticklabels(res_df['Experiment'], fontproperties=my_font, fontsize=13)
     
-    # 核心修改1：大幅抬高左轴上限，将柱状图整体“压”到底部 65% 的区域
+    # 物理空间错位：压低柱状图
     ax1.set_ylim(0, max(res_df['RMSE']) * 1.55) 
     ax1.grid(axis='y', linestyle='--', alpha=0.5)
 
     for i, bar in enumerate(bars):
         height = bar.get_height()
-        # 基础 RMSE 写在柱体紧上方
         ax1.annotate(f'{height:.2f}', xy=(bar.get_x() + bar.get_width() / 2, height),
                     xytext=(0, 4), textcoords="offset points", ha='center', va='bottom',
                     fontsize=12, fontweight='bold', fontfamily='serif')
-        # 红色增益 (+X.XX) 放在最顶端
         if i > 0:
             inc = res_df.iloc[i]['RMSE_Increase']
             ax1.annotate(f'+{inc:.2f}', xy=(bar.get_x() + bar.get_width() / 2, height),
@@ -150,25 +149,30 @@ def plot_ablation_results(res_df):
     ax2.plot(x, res_df['R2'], color='black', marker='o', markersize=8, linewidth=2.5, linestyle='--', label='决定系数 ($R^2$)')
     ax2.set_ylabel(r'模型拟合度决定系数 ($R^2$)', fontproperties=my_font, fontsize=14)
     
-    # 核心修改2：压低右轴下限，将折线整体“抬”到顶部区域，彻底错开双轴的物理相交空间
+    # 物理空间错位：抬高折线图
     ax2.set_ylim(min(res_df['R2']) - 0.15, max(res_df['R2']) + 0.15)
     
-    # 核心修改3：R2标签统一放在折点正上方，并加深白底不透明度，即使落入柱子内部也能完美阅读
+    # R2 白底遮罩防重叠
     for i, r2_val in enumerate(res_df['R2']):
         ax2.annotate(f'{r2_val:.3f}', xy=(x[i], r2_val), xytext=(0, 10), textcoords="offset points",
                      ha='center', va='bottom', fontsize=12, fontfamily='serif',
                      bbox=dict(boxstyle='round,pad=0.2', facecolor='white', edgecolor='none', alpha=0.95))
 
-    # 合并双轴图例并微调位置
-    lines_1, labels_1 = ax1.get_legend_handles_labels()
-    lines_2, labels_2 = ax2.get_legend_handles_labels()
-    ax1.legend(lines_1 + lines_2, labels_1 + labels_2, loc='upper left', prop=my_font, fontsize=11, frameon=True)
+    # =========================================================================
+    # 核心修改：自定义全显性图例 (Explicit Legend)
+    # =========================================================================
+    legend_elements = [
+        Patch(facecolor='lightgray', edgecolor='black', alpha=0.85, label='绝对误差 RMSE (左轴 / 柱状图)'),
+        Line2D([0], [0], color='black', marker='o', markersize=8, linewidth=2.5, linestyle='--', label='决定系数 $R^2$ (右轴 / 折线图)'),
+        Line2D([0], [0], marker='+', color='w', label='误差增量 $\Delta$RMSE (红色标值)', markeredgecolor='red', markersize=10, markeredgewidth=2)
+    ]
+    ax1.legend(handles=legend_elements, loc='upper left', prop=my_font, fontsize=11, frameon=True, edgecolor='black')
 
     plt.tight_layout()
     save_path = os.path.join(OUTPUT_DIR, "Fig3_Ablation_Study_BarChart.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.close()
-    print(f"  ✅ 完美！错位防遮挡版学术图已保存至: {save_path}")
+    print(f"  ✅ 完美！错位防遮挡+全显性图例版学术图已保存至: {save_path}")
     print("="*80)
 
 if __name__ == "__main__":
