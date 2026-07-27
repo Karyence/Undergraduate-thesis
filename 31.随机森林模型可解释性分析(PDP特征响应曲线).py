@@ -66,10 +66,10 @@ def main():
     feature_dict = {
         'AOD': '气溶胶光学厚度 (AOD)',
         'ERA5_BLH': '边界层高度 (BLH, m)',
-        'ERA5_T2M': '2米地表温度 (T2M, ℃)',
-        'ERA5_WIND': '地表风速 (Wind, m/s)',
-        'ERA5_D2M': '2米露点温度 (D2M, ℃)',
-        'DEM': '陆地海拔高度 (DEM, m)'
+        'ERA5_T2M': '2m温度 (T2M, ℃)',
+        'ERA5_WIND': '风速 (WIND, m/s)',
+        'ERA5_D2M': '2m露点温度 (D2M, ℃)',
+        'DEM': '高程 (DEM, m)'
     }
     valid_features = [f for f in feature_dict.keys() if f in best_features]
 
@@ -110,11 +110,8 @@ def main():
         ax.grid(True, linestyle='--', alpha=0.5, zorder=1)
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
-
-    plt.suptitle("随机森林核心特征对 PM$_{2.5}$ 浓度的非线性物理响应曲线", 
-                 fontproperties=my_font, fontsize=22, weight='bold', y=0.98)
     
-    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    plt.tight_layout()
     
     save_path = os.path.join(FIG_DIR, "RF_PDP_Physical_Response_Premium.png")
     plt.savefig(save_path, bbox_inches='tight', transparent=False)
