@@ -93,10 +93,9 @@ def main():
     test_sites_df = sites_info.groupby('spatial_cluster').apply(lambda x: x.sample(n=1, random_state=42)).reset_index(drop=True)
     test_df = df[df['site_code'].isin(test_sites_df['site_code'].tolist())].copy()
 
-    print("🎯 [3/4] 随机抽取 3000 个样本进入 TreeExplainer 解析引擎...")
+    print("🎯 [3/4] 提取【全量】独立测试集进入 SHAP 解析引擎 (硬核计算，请耐心等待 1-2 小时)...")
     X_test = test_df[best_features].astype('float32')
-    X_sample = X_test.sample(n=3000, random_state=42)
-    
+    X_sample = X_test.copy()
     X_sample.columns = display_feature_names
 
     # =============================================================================
@@ -117,42 +116,52 @@ def main():
     
     explainer = shap.KernelExplainer(safe_predict, background)
 
-    print("⏳ 正在进行 SHAP 归因计算 (处理 3000 个样本)，这需要几分钟，请关注下方进度条...")
+    print("⏳ 正在进行 SHAP 归因计算，请关注下方进度条...")
     # silent=False 会在终端打印一个进度条，让你清楚看到计算进度
     shap_values = explainer.shap_values(X_sample, silent=False)
 
     # =============================================================================
-    # 4. 绘制纯净版 SHAP 蜂之图
+    # 4. 生成 SHAP 摘要图 
     # =============================================================================
-    print("🎨 [4/4] 正在渲染高分辨率 SHAP 特征贡献分布图...")
+    print("  [4/4] 绘制 SHAP 摘要图...")
+
+    FEATURE_MAPPING = {
+        'ERA5_D2M': '2m露点温度 (D2M)', 'month': '月份 (Month)', 'season': '季节 (Season)',
+        'ERA5_BLH': '边界层高度 (BLH)', 'day_of_week': '星期 (Day of week)', 'AOD': '气溶胶光学厚度 (AOD)',
+        'ERA5_T2M': '2m温度 (T2M)', 'ERA5_WIND': '风速 (WIND)', 'DEM': '高程 (DEM)',
+        'is_holiday': '是否节假日 (Holiday)', 'hour': '小时 (Hour)', 'ERA5_TP': '累计降水 (TP)',
+        'LC_cropland_frac': '耕地占比 (Cropland)', 'LC_forest_frac': '森林占比 (Forest)',
+        'LC_barren_frac': '裸地占比 (Barren)', 'NDVI': '植被指数 (NDVI)', 'LC_traffic_frac': '交通占比 (Traffic)',
+        'is_weekend': '是否周末 (Weekend)', 'LC_grassland_frac': '草地占比 (Grassland)',
+        'LC_building_frac': '建筑占比 (Building)', 'Slope': '坡度 (Slope)', 'LC_water_frac': '水体占比 (Water)',
+        'POPULATION': '人口密度 (POP)', 'LC_wetland_frac': '湿地占比 (Wetland)'
+    }
     
-    # 创建适合单图的画布尺寸 (宽10，高8)
-    fig = plt.figure(figsize=(10, 8), dpi=300)
+    # 确保 X_sample 使用的是严格统一的标签
+    display_feature_names = [FEATURE_MAPPING.get(f, f) for f in best_features]
+    X_sample.columns = display_feature_names
     
-    # 绘制 SHAP summary plot
-    shap.summary_plot(shap_values, X_sample, show=False, plot_type="dot", 
-                      color_bar_label="特征数值大小 (Feature Value)")
+    fig = plt.figure(figsize=(10, 10), dpi=300) 
+
+    shap.summary_plot(shap_values, X_sample, show=False, plot_type="dot",
+                      max_display=len(best_features),
+                      plot_size=(10, 10), 
+                      color_bar_label="特征取值 (Feature Value)")
     
-    # 获取当前坐标轴进行定制化美化
     ax = plt.gca()
-    ax.set_xlabel('SHAP值 (对 PM$_{2.5}$ 预测的贡献量 $\mu g/m^3$)', fontsize=16, weight='bold', labelpad=15)
-    ax.set_title('随机森林模型反演 PM$_{2.5}$ 机制解析 (SHAP特征贡献分布)', fontsize=18, weight='bold', pad=20)
+    ax.set_xlabel(r'SHAP值 (对 PM$_{2.5}$ 浓度的边际贡献, $\mu g/m^3$)', fontsize=18, weight='bold', labelpad=15)
     
-    # 加粗和放大坐标轴刻度字体
-    ax.tick_params(axis='x', labelsize=12)
-    ax.tick_params(axis='y', labelsize=14)
+    ax.tick_params(axis='x', labelsize=14)
+    ax.tick_params(axis='y', labelsize=15)
     
-    # 紧凑布局
     plt.tight_layout()
     
-    # 保存出图
     save_path = os.path.join(FIG_DIR, "RF_Interpretability_SHAP_Summary.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.close()
-
     print("="*70)
-    print(f"🎉 完美！单幅纯净版 SHAP 物理可解释性图表已生成！")
-    print(f"👉 图片路径: {save_path}")
+    print(f"精修版 SHAP 机制图(全量24特征)已成功生成:")
+    print(f"保存路径: {save_path}")
     print("="*70)
 
 if __name__ == "__main__":
