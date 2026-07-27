@@ -294,16 +294,30 @@ def hyperparameter_tuning_and_evaluation(train_df, test_df, selected_features):
     return best_model
 
 # =============================================================================
-# 6. 特征重要性可视化
+# 6. 特征重要性可视化 
 # =============================================================================
 def extract_and_plot_feature_importance(best_model, feature_names, test_df):
     print("\n" + "="*70)
-    print("📊 生成模型特征重要性分析图")
+    print("正在计算 Permutation 特征重要性...")
     print("="*70)
     
+    # 标准字典
+    FEATURE_MAPPING = {
+        'ERA5_D2M': '2m露点温度 (D2M)', 'month': '月份 (Month)', 'season': '季节 (Season)',
+        'ERA5_BLH': '边界层高度 (BLH)', 'day_of_week': '星期 (Day of week)', 'AOD': '气溶胶光学厚度 (AOD)',
+        'ERA5_T2M': '2m温度 (T2M)', 'ERA5_WIND': '风速 (WIND)', 'DEM': '高程 (DEM)',
+        'is_holiday': '是否节假日 (Holiday)', 'hour': '小时 (Hour)', 'ERA5_TP': '累计降水 (TP)',
+        'LC_cropland_frac': '耕地占比 (Cropland)', 'LC_forest_frac': '森林占比 (Forest)',
+        'LC_barren_frac': '裸地占比 (Barren)', 'NDVI': '植被指数 (NDVI)', 'LC_traffic_frac': '交通占比 (Traffic)',
+        'is_weekend': '是否周末 (Weekend)', 'LC_grassland_frac': '草地占比 (Grassland)',
+        'LC_building_frac': '建筑占比 (Building)', 'Slope': '坡度 (Slope)', 'LC_water_frac': '水体占比 (Water)',
+        'POPULATION': '人口密度 (POP)', 'LC_wetland_frac': '湿地占比 (Wetland)'
+    }
+
     X_test = test_df[feature_names].astype('float32').values
-    y_test = test_df['pm25_hourly'].astype('float32').values # 🌟 对应小时级
-    
+    y_test = test_df['pm25_hourly'].astype('float32').values
+
+    # 计算 Permutation
     result = permutation_importance(
         best_model, X_test, y_test, n_repeats=5, random_state=42, scoring='r2', n_jobs=1
     )
@@ -315,15 +329,24 @@ def extract_and_plot_feature_importance(best_model, feature_names, test_df):
         'Importance': importances
     }).sort_values(by='Importance', ascending=False)
     
-    print("\n  -> 🌟 变量重要性排名 (对独立测试集 R² 的真实贡献):")
-    for index, row in df_imp.iterrows():
-        print(f"      {row['Feature']:<18}: {row['Importance']:.4f}")
+    df_imp['Feature'] = df_imp['Feature'].map(FEATURE_MAPPING).fillna(df_imp['Feature'])
     
-    plt.figure(figsize=(12, 10), dpi=300)
+    print("\n -> 特征重要性排名 (前10):")
+    for index, row in df_imp.head(10).iterrows():
+        print(f"    {row['Feature']:<20}: {row['Importance']:.4f}")
+
+    plt.figure(figsize=(10, 10), dpi=300) 
     sns.barplot(x='Importance', y='Feature', data=df_imp, palette='magma')
-    plt.title('最优模型特征重要性评估 (Permutation - 小时级模型)', fontproperties=my_font, fontsize=16)
-    plt.xlabel(r'特征对验证集 $R^2$ 的贡献度', fontproperties=my_font, fontsize=14)
-    plt.ylabel('入模特征变量', fontproperties=my_font, fontsize=14)
+    
+    ax = plt.gca()
+    plt.xlabel(r'全局 $R^2$ 衰减幅度', fontproperties=my_font, fontsize=18, fontweight='bold')
+    plt.ylabel('', fontproperties=my_font, fontsize=14) 
+    
+    for label in ax.get_yticklabels():
+        label.set_fontproperties(my_font)
+        label.set_fontsize(15) 
+        
+    plt.tick_params(axis='x', labelsize=14)
     plt.tight_layout()
     
     fig_dir = os.path.join(OUTPUT_DIR, "Figures_随机森林")
@@ -331,7 +354,7 @@ def extract_and_plot_feature_importance(best_model, feature_names, test_df):
     save_path = os.path.join(fig_dir, "RF_Feature_Importance_Permutation_Terrain.png")
     plt.savefig(save_path)
     plt.close()
-    print(f"  ✅ 特征重要性排序图已保存至: {save_path}")
+    print(f"图表已保存至: {save_path}")
 
 # =============================================================================
 # 主程序入口
