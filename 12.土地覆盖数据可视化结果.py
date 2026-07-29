@@ -95,10 +95,8 @@ def plot_landcover_fractions():
         cbar = fig.colorbar(im, ax=ax, orientation='vertical', shrink=0.85, pad=0.04)
         cbar.set_label('Area Fraction', fontsize=16)
         cbar.ax.tick_params(labelsize=14) 
-    fig.suptitle('长三角地区 1km 分辨率土地覆盖精细化占比空间分布', 
-                 fontproperties=my_font, fontsize=30, y=0.98, fontweight='bold')
 
-    plt.tight_layout(rect=[0, 0, 1, 0.96], h_pad=3.0, w_pad=2.0) 
+    plt.tight_layout(h_pad=3.0, w_pad=2.0) 
 
     print(f"💾 正在保存高清图像至: {OUTPUT_FIG}")
     os.makedirs(os.path.dirname(OUTPUT_FIG), exist_ok=True)
