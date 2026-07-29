@@ -129,7 +129,6 @@ def plot_map(ds, gdf, lons, lats, font):
         ha='left', va='bottom', bbox=dict(boxstyle="round,pad=0.5", facecolor="white", edgecolor="gray", alpha=0.9)
     )
     
-    ax.set_title("长三角 (YRD) 1km 地形分布图", fontproperties=title_font, pad=35) 
     ax.set_extent([min_lon-0.1, max_lon+0.1, min_lat-0.1, max_lat+0.1])
     
     os.makedirs(os.path.dirname(CONF["OUT_IMG"]), exist_ok=True)
