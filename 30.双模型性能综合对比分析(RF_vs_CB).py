@@ -122,41 +122,48 @@ def main():
         m, b = np.polyfit(y_true, y_pred, 1)
         ax.plot(y_true, m*y_true + b, color='red', lw=3.0, label=f'Fit: y={m:.2f}x+{b:.2f}')
         
-        # 统计信息框 
+        # 统计信息框 (完美对齐图4.1：将英文与数字字体强制指定为 Times New Roman)
         textstr = '\n'.join((
             f'N = {n_samples:,}',
-            f'$R^2$ = {r2:.4f}', 
+            f'$R^2$ = {r2:.2f}', 
             f'RMSE = {rmse:.2f} $\\mu g/m^3$',
-            f'NMB = {nmb:+.2f}%'
+            f'MAE = {mae:.2f} $\\mu g/m^3$'
         ))
         props = dict(boxstyle='round,pad=0.6', facecolor='white', alpha=0.85, edgecolor='gray')
-        ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=TEXT_FS, fontproperties=my_font,
+        # 【关键修改】：去掉 fontproperties=my_font，改用 fontfamily='Times New Roman'
+        ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=TEXT_FS, fontfamily='Times New Roman',
                 verticalalignment='top', bbox=props)
         
-        # 标题与标签
-        ax.set_title(title, fontproperties=my_font, fontsize=TITLE_FS, weight='bold', pad=20)
-        ax.set_xlabel('真实观测 PM$_{2.5}$ 浓度 ($\\mu g/m^3$)', fontproperties=my_font, fontsize=LABEL_FS)
-        ax.set_ylabel('模型预测 PM$_{2.5}$ 浓度 ($\\mu g/m^3$)', fontproperties=my_font, fontsize=LABEL_FS)
+        # 标题与标签 
+        ax.set_title(title, loc='left', fontfamily='Times New Roman', fontsize=TITLE_FS, pad=12)
+        ax.set_xlabel('实测 PM$_{2.5}$ 浓度 ($\\mu g/m^3$)', fontproperties=my_font, fontsize=LABEL_FS)
+        ax.set_ylabel('预测 PM$_{2.5}$ 浓度 ($\\mu g/m^3$)', fontproperties=my_font, fontsize=LABEL_FS)
         
-        # 刻度字号
+        # 刻度字号与坐标轴数字字体统一
         ax.tick_params(axis='both', which='major', labelsize=TICK_FS)
-        ax.legend(loc='lower right', prop={'family': my_font.get_name(), 'size': LEGEND_FS})
-        ax.grid(True, linestyle=':', alpha=0.5)
+        for label in ax.get_xticklabels() + ax.get_yticklabels():
+            label.set_fontfamily('Times New Roman')
+            
+        # 图例统一为 Times New Roman
+        ax.legend(loc='lower right', prop={'family': 'Times New Roman', 'size': LEGEND_FS})
+        ax.grid(True, linestyle='--', color='silver', alpha=0.6)
+        
+        # 独立色标设定与色标数字字体统一
+        cbar = plt.colorbar(h[3], ax=ax, fraction=0.046, pad=0.04)
+        cbar.set_label('数据点密度 (个数)', fontproperties=my_font, fontsize=LABEL_FS)
+        cbar.ax.tick_params(labelsize=TICK_FS)
+        for label in cbar.ax.get_yticklabels():
+            label.set_fontfamily('Times New Roman')
+        
         return h[3]
 
-    # 绘制左右两图
-    im1 = draw_single_scatter(axes[0], y_test_hourly, preds_rf_hourly, "(a) 随机森林 (Random Forest)")
-    im2 = draw_single_scatter(axes[1], y_test_hourly, preds_cb_hourly, "(b) CatBoost")
+    # 绘制左右两图 
+    im1 = draw_single_scatter(axes[0], y_test_hourly, preds_rf_hourly, "(a)")
+    im2 = draw_single_scatter(axes[1], y_test_hourly, preds_cb_hourly, "(b)")
 
-    # 调整布局
-    plt.tight_layout(rect=[0, 0, 0.93, 1]) 
+    # 调整布局 
+    plt.tight_layout() 
     
-    # 添加垂直色标
-    cbar_ax = fig.add_axes([0.94, 0.15, 0.012, 0.7])
-    cbar = fig.colorbar(im2, cax=cbar_ax)
-    cbar.set_label('小时样本点密度 (Count)', fontproperties=my_font, fontsize=LABEL_FS)
-    cbar.ax.tick_params(labelsize=TICK_FS)
-
     # 保存文件
     save_path = os.path.join(COMPARE_FIG_DIR, "Models_Comparison_Hourly_Scatter.png")
     plt.savefig(save_path, bbox_inches='tight')
