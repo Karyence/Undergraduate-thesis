@@ -162,8 +162,6 @@ def plot_spatial_distribution(train_df, test_df):
                     edgecolor='black', borderaxespad=0., labelspacing=1.0)
     leg.set_zorder(10)
 
-    ax.set_title('长三角地区 PM2.5 (小时级) 预测模型站点空间隔离分布', fontproperties=my_font, fontsize=18, pad=15)
-
     fig_dir = os.path.join(OUTPUT_DIR, "Figures_随机森林")
     os.makedirs(fig_dir, exist_ok=True)
     save_path = os.path.join(fig_dir, "Spatial_Sites_Distribution_GEBCO.png")
