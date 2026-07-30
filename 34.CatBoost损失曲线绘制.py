@@ -20,11 +20,10 @@ plt.figure(figsize=(10, 6), dpi=300)
 plt.plot(df_learn['iter'], df_learn['RMSE'], label='训练集 (Train RMSE)', color='#1f77b4', linewidth=2)
 plt.plot(df_test['iter'], df_test['RMSE'], label='验证集 (Validation RMSE)', color='#ff7f0e', linewidth=2, linestyle='--')
 
-plt.title('CatBoost 模型迭代收敛与损失曲线', fontproperties=my_font, fontsize=16)
 plt.xlabel('迭代次数 (Iterations)', fontproperties=my_font, fontsize=14)
-plt.ylabel('均方根误差 RMSE (μg/m³)', fontproperties=my_font, fontsize=14)
+plt.ylabel('均方根误差 RMSE ($\\mu g/m^3$)', fontproperties=my_font, fontsize=14)
 plt.legend(prop=my_font, fontsize=12)
-plt.grid(True, linestyle=':', alpha=0.6)
+plt.grid(True, linestyle='--', color='silver', alpha=0.6)
 
 # 保存图片
 output_dir = "/home/wangzonghan/bisheshuju/Results/Figures_CatBoost"
