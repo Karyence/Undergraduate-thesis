@@ -221,9 +221,6 @@ def main():
     fig.legend(handles=handles_list, loc='lower right', bbox_to_anchor=(0.98, 0.02), 
                prop=legend_font, frameon=True, framealpha=1.0, 
                edgecolor='black', facecolor='white')
-
-    # 标题
-    ax.set_title(f'长三角 1km 机器学习反演日均验证图 ({TARGET_DATE})', fontproperties=my_font, fontsize=26, weight='bold', pad=25)
     
     save_path = os.path.join(FIG_DIR, f"Spatial_Daily_{TARGET_DATE.replace('-', '')}.png")
     plt.savefig(save_path, bbox_inches='tight', dpi=300)
