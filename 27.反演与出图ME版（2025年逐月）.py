@@ -86,8 +86,6 @@ def main():
     print("\n -> [2/3] 创建全局 2x5 矩阵画布并开始逐月聚合推理渲染...")
     
     fig = plt.figure(figsize=(20, 26), dpi=300) 
-    fig.suptitle('长三角 1km 空间反演与独立验证 ME 平均误差演变序列 (2025年 1-12月)', 
-                 fontproperties=my_font, fontsize=36, weight='bold', y=0.94)
                  
     sm_bg = None
     sm_err = None
@@ -227,7 +225,7 @@ def main():
     # =============================================================================
     print("\n -> [3/3] 正在生成全局统一色标并输出最终大图...")
     
-    plt.subplots_adjust(left=0.06, right=0.88, bottom=0.16, top=0.90, wspace=0.08, hspace=0.12)
+    plt.subplots_adjust(left=0.06, right=0.88, bottom=0.16, top=0.95, wspace=0.08, hspace=0.12)
     
     if sm_bg is not None:
         cbar_ax1 = fig.add_axes([0.15, 0.06, 0.45, 0.015]) 
