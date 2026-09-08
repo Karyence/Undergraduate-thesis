@@ -78,7 +78,7 @@ def generate_academic_figures(agg_df_daily, comp_df_hourly, output_dir):
         
         h = ax.hist2d(y_t, y_p, bins=100, cmap='jet', norm=LogNorm(), cmin=1)
         cb = fig.colorbar(h[3], ax=ax, fraction=0.046, pad=0.04)
-        cb.set_label('数据点密度 (个数)', fontproperties=my_font, fontsize=12)
+        cb.set_label('Data Point Density (Count)', fontsize=12)
         ax.plot([0, max_val], [0, max_val], 'k--', lw=2, label='1:1 Line')
         m, b = np.polyfit(y_t, y_p, 1)
         ax.plot(y_t, m*y_t + b, color='red', lw=2, label=f'Fit: y={m:.2f}x+{b:.2f}')
@@ -86,17 +86,17 @@ def generate_academic_figures(agg_df_daily, comp_df_hourly, output_dir):
         textstr = f'N = {N:,}\n$R^2$ = {r2:.2f}\nRMSE = {rmse:.2f} $\mu g/m^3$\nMAE = {mae:.2f} $\mu g/m^3$'
         props = dict(boxstyle='round', facecolor='white', alpha=0.8, edgecolor='gray')
         ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=12,
-                verticalalignment='top', bbox=props, family='serif')
+                verticalalignment='top', bbox=props)
         
         # 方案A：子图标题仅保留精简的 (a) 和 (b) 标号，实现极致干练的顶刊留白风格
-        ax.set_title(title, loc='left', fontproperties=my_font, fontsize=15, pad=15)
-        ax.set_xlabel(r'实测 PM$_{2.5}$ 浓度 ($\mu g/m^3$)', fontproperties=my_font, fontsize=13)
-        ax.set_ylabel(r'预测 PM$_{2.5}$ 浓度 ($\mu g/m^3$)', fontproperties=my_font, fontsize=13)
+        ax.set_title(title, loc='left', fontsize=15, pad=15)
+        ax.set_xlabel(r'Observed PM$_{2.5}$ Concentration ($\mu g/m^3$)', fontsize=13)
+        ax.set_ylabel(r'Predicted PM$_{2.5}$ Concentration ($\mu g/m^3$)', fontsize=13)
         ax.set_xlim(0, max_val)
         ax.set_ylim(0, max_val)
         ax.set_aspect('equal', adjustable='box')
         ax.grid(True, linestyle=':', alpha=0.6)
-        ax.legend(loc='lower right', frameon=True, edgecolor='black', prop=my_font, fontsize=10)
+        ax.legend(loc='lower right', frameon=True, edgecolor='black', fontsize=10)
 
     # 传入纯标号 (a) 和 (b)
     plot_density_scatter(axes[0], y_true, y_agg, '(a)')
