@@ -208,6 +208,7 @@ def generate_academic_figures(agg_df_daily, comp_df_hourly, output_dir):
 
     lines_1, labels_1 = ax2.get_legend_handles_labels()
     lines_2, labels_2 = ax2_twin.get_legend_handles_labels()
+    ax1.legend(lines_1 + lines_2, labels_1 + labels_2, loc='upper right', prop={'size':11}, frameon=True)
     ax2.legend(lines_1 + lines_2, labels_1 + labels_2, loc='upper left', prop={'size':11}, frameon=True)
 
     plt.tight_layout()
