@@ -146,7 +146,7 @@ def plot_ablation_results(res_df):
 
     ax2 = ax1.twinx()
     ax2.plot(x, res_df['R2'], color='black', marker='o', markersize=8, linewidth=2.5, linestyle='--', label=r'Coefficient of Determination ($\mathbf{R}^{\mathbf{2}}$)')
-    ax2.set_ylabel(r'Coefficient of Determination ($\mathbf{R}^{\mathbf{2}}$)', fontsize=15, weight='bold')图
+    ax2.set_ylabel(r'Coefficient of Determination ($\mathbf{R}^{\mathbf{2}}$)', fontsize=15, weight='bold')
     ax2.set_ylim(min(res_df['R2']) - 0.15, max(res_df['R2']) + 0.15)
     
     # R2 白底遮罩防重叠
