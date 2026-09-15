@@ -270,7 +270,7 @@ def hyperparameter_tuning_and_evaluation(train_df, test_df, selected_features):
     eval_df = test_df[['date', 'site_code', 'pm25_hourly']].copy()
     eval_df['pred_hourly'] = preds_hourly
     
-    # 按天和站点 groupby 求均值，完美模拟真实的日均聚合逻辑！
+    # 按天和站点 groupby 求均值，完美模拟真实的日均聚合逻辑
     daily_eval_df = eval_df.groupby(['date', 'site_code']).mean().reset_index()
     y_test_daily = daily_eval_df['pm25_hourly'].values
     preds_daily = daily_eval_df['pred_hourly'].values
@@ -299,17 +299,16 @@ def extract_and_plot_feature_importance(best_model, feature_names, test_df):
     print("正在计算 Permutation 特征重要性...")
     print("="*70)
     
-    # 标准字典
     FEATURE_MAPPING = {
-        'ERA5_D2M': '2m露点温度 (D2M)', 'month': '月份 (Month)', 'season': '季节 (Season)',
-        'ERA5_BLH': '边界层高度 (BLH)', 'day_of_week': '星期 (Day of week)', 'AOD': '气溶胶光学厚度 (AOD)',
-        'ERA5_T2M': '2m温度 (T2M)', 'ERA5_WIND': '风速 (WIND)', 'DEM': '高程 (DEM)',
-        'is_holiday': '是否节假日 (Holiday)', 'hour': '小时 (Hour)', 'ERA5_TP': '累计降水 (TP)',
-        'LC_cropland_frac': '耕地占比 (Cropland)', 'LC_forest_frac': '森林占比 (Forest)',
-        'LC_barren_frac': '裸地占比 (Barren)', 'NDVI': '植被指数 (NDVI)', 'LC_traffic_frac': '交通占比 (Traffic)',
-        'is_weekend': '是否周末 (Weekend)', 'LC_grassland_frac': '草地占比 (Grassland)',
-        'LC_building_frac': '建筑占比 (Building)', 'Slope': '坡度 (Slope)', 'LC_water_frac': '水体占比 (Water)',
-        'POPULATION': '人口密度 (POP)', 'LC_wetland_frac': '湿地占比 (Wetland)'
+        'ERA5_D2M': 'D2M', 'month': 'Month', 'season': 'Season',
+        'ERA5_BLH': 'BLH', 'day_of_week': 'Day of week', 'AOD': 'AOD',
+        'ERA5_T2M': 'T2M', 'ERA5_WIND': 'WIND', 'DEM': 'DEM',
+        'is_holiday': 'Holiday', 'hour': 'Hour', 'ERA5_TP': 'TP',
+        'LC_cropland_frac': 'Cropland', 'LC_forest_frac': 'Forest',
+        'LC_barren_frac': 'Barren', 'NDVI': 'NDVI', 'LC_traffic_frac': 'Traffic',
+        'is_weekend': 'Weekend', 'LC_grassland_frac': 'Grassland',
+        'LC_building_frac': 'Building', 'Slope': 'Slope', 'LC_water_frac': 'Water',
+        'POPULATION': 'POP', 'LC_wetland_frac': 'Wetland'
     }
 
     X_test = test_df[feature_names].astype('float32').values
@@ -337,14 +336,17 @@ def extract_and_plot_feature_importance(best_model, feature_names, test_df):
     sns.barplot(x='Importance', y='Feature', data=df_imp, palette='magma')
     
     ax = plt.gca()
-    plt.xlabel(r'全局 $R^2$ 衰减幅度', fontproperties=my_font, fontsize=18, fontweight='bold')
-    plt.ylabel('', fontproperties=my_font, fontsize=14) 
+    plt.xlabel(r'Global $\mathbf{R}^{\mathbf{2}}$ Decay', fontfamily='serif', fontsize=18, fontweight='bold')
+    plt.ylabel('', fontfamily='serif', fontsize=14) 
     
     for label in ax.get_yticklabels():
-        label.set_fontproperties(my_font)
+        label.set_fontfamily('serif')
         label.set_fontsize(15) 
         
     plt.tick_params(axis='x', labelsize=14)
+    for label in ax.get_xticklabels():
+        label.set_fontfamily('serif')
+        
     plt.tight_layout()
     
     fig_dir = os.path.join(OUTPUT_DIR, "Figures_随机森林")
