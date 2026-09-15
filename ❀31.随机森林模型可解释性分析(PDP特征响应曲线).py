@@ -22,13 +22,11 @@ FIG_DIR = f"{BASE_DIR}/Results/Figures_随机森林"
 
 os.makedirs(FIG_DIR, exist_ok=True)
 
-FONT_PATH = f"{BASE_DIR}/fonts/SimHei.ttf"
-my_font = FontProperties(fname=FONT_PATH, size=14) if os.path.exists(FONT_PATH) else FontProperties(size=14)
+plt.rcParams['font.family'] = 'serif'
+plt.rcParams['font.serif'] = ['Times New Roman', 'Times', 'DejaVu Serif', 'Liberation Serif']
 plt.rcParams['axes.unicode_minus'] = False
 
 def main():
-    print("="*70)
-    print("🚀 启动：31. 模型可解释性分析 ")
     print("="*70)
 
     # =============================================================================
@@ -62,21 +60,20 @@ def main():
     
     X_test = test_df[best_features].astype('float32')
 
-    # 核心物理特征列表及其在图表中的展示名称
     feature_dict = {
-        'AOD': '气溶胶光学厚度 (AOD)',
-        'ERA5_BLH': '边界层高度 (BLH, m)',
-        'ERA5_T2M': '2m温度 (T2M, ℃)',
-        'ERA5_WIND': '风速 (WIND, m/s)',
-        'ERA5_D2M': '2m露点温度 (D2M, ℃)',
-        'DEM': '高程 (DEM, m)'
+        'AOD': 'Aerosol Optical Depth (AOD)',
+        'ERA5_BLH': 'Boundary Layer Height (BLH, m)',
+        'ERA5_T2M': '2m Temperature (T2M, ℃)',
+        'ERA5_WIND': 'Wind Speed (WIND, m/s)',
+        'ERA5_D2M': '2m Dewpoint Temp (D2M, ℃)',
+        'DEM': 'Elevation (DEM, m)'
     }
     valid_features = [f for f in feature_dict.keys() if f in best_features]
 
     # =============================================================================
     # 3. 手工计算并绘制 PDP 曲线
     # =============================================================================
-    print("\n🎨 [3/3] 正在提取非线性响应数据并渲染精美图表...")
+    print("\n🎨 [3/3] 正在提取非线性响应数据并渲染图表...")
     
     X_sample = X_test.sample(n=min(30000, len(X_test)), random_state=42)
 
@@ -90,23 +87,24 @@ def main():
         pdp_results = partial_dependence(rf_model, X_sample, [feature], grid_resolution=60)
         x_vals = pdp_results['grid_values'][0]
         y_vals = pdp_results['average'][0]
-
-        # 高斯平滑，消除随机森林特有的“锯齿感”
         y_vals_smooth = gaussian_filter1d(y_vals, sigma=1.2)
 
-        # 主线与优雅的底部渐变填充
+        # 主线的底部渐变填充
         ax.plot(x_vals, y_vals_smooth, color='#C0392B', linewidth=3.5, zorder=3)
         ax.fill_between(x_vals, y_vals_smooth, np.min(y_vals_smooth) - (np.max(y_vals_smooth)-np.min(y_vals_smooth))*0.5, 
                         color='#E74C3C', alpha=0.15, zorder=2)
         
         # 坐标轴与网格的调优
         ax.set_ylim(np.min(y_vals_smooth) * 0.95, np.max(y_vals_smooth) * 1.05)
-        ax.set_xlabel(feature_dict[feature], fontproperties=my_font, fontsize=14, weight='bold')
+        ax.set_xlabel(feature_dict[feature], fontfamily='serif', fontsize=15, weight='bold')
         
         if idx % 3 == 0:
-            ax.set_ylabel('PM$_{2.5}$ 边际响应浓度 ($\\mu g/m^3$)', fontproperties=my_font, fontsize=13)
+            ax.set_ylabel(r'Marginal Response of PM$_{\mathbf{2.5}}$ ($\boldsymbol{\mu}\mathbf{g}/\mathbf{m}^{\mathbf{3}}$)', fontfamily='serif', fontsize=14, weight='bold')
             
-        ax.tick_params(labelsize=12)
+        ax.tick_params(labelsize=13)
+        for label in ax.get_xticklabels() + ax.get_yticklabels():
+            label.set_fontfamily('serif')
+            
         ax.grid(True, linestyle='--', alpha=0.5, zorder=1)
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
@@ -117,7 +115,7 @@ def main():
     plt.savefig(save_path, bbox_inches='tight', transparent=False)
     plt.close()
 
-    print(f"\n🎉 精美 PDP 曲线绘制完成！\n 👉 请前往查看大图: {save_path}")
+    print(f"\n🎉 PDP 曲线绘制完成！\n 👉 请前往查看大图: {save_path}")
 
 if __name__ == "__main__":
     main()
