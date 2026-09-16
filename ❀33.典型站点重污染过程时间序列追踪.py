@@ -22,8 +22,8 @@ RF_MODEL_DIR = f"{BASE_DIR}/Results/Models_随机森林"
 FIG_DIR = f"{BASE_DIR}/Results/Figures_模型对比"
 os.makedirs(FIG_DIR, exist_ok=True)
 
-FONT_PATH = f"{BASE_DIR}/fonts/SimHei.ttf"
-my_font = FontProperties(fname=FONT_PATH, size=14) if os.path.exists(FONT_PATH) else FontProperties(size=14)
+plt.rcParams['font.family'] = 'serif'
+plt.rcParams['font.serif'] = ['Times New Roman', 'Times', 'DejaVu Serif', 'Liberation Serif']
 plt.rcParams['axes.unicode_minus'] = False
 
 def main():
@@ -32,7 +32,7 @@ def main():
     print("="*70)
 
     # =============================================================================
-    # 1. 严格复刻 15% 独立测试集
+    # 1. 复刻 15% 独立测试集
     # =============================================================================
     print("\n📂 [1/4] 加载数据与复原测试集...")
     df = pd.read_parquet(DATA_FILE)
@@ -130,45 +130,40 @@ def main():
     print(f"   -> 期间最高浓度: {max_true:.1f} μg/m³")
 
     # =============================================================================
-    # 4. 绘制高颜值时间序列图
+    # 4. 绘制时间序列图
     # =============================================================================
     print("\n🎨 [4/4] 正在绘制动态时间序列追踪图...")
     fig, ax = plt.subplots(figsize=(15, 6), dpi=300)
 
-    # 绘制真实值与预测值折线
     ax.plot(episode_df['datetime'], episode_df['pm25_hourly'], 
-            color='black', linewidth=2.5, label='站点实测值 (Observed)', zorder=4)
+            color='black', linewidth=2.5, label='Observed', zorder=4)
     ax.plot(episode_df['datetime'], episode_df['pred_pm25'], 
-            color='#D9383A', linewidth=2.5, linestyle='--', label='RF预测值 (Predicted)', zorder=5)
+            color='#D9383A', linewidth=2.5, linestyle='--', label='Predicted (RF)', zorder=5)
 
-    # 绘制国家空气质量标准 AQI 背景色阶带 
-    ax.axhspan(0, 35, facecolor='#A8E6CF', alpha=0.3, zorder=1, label='优 (0-35)')
-    ax.axhspan(35, 75, facecolor='#FFD3B6', alpha=0.3, zorder=1, label='良 (35-75)')
-    ax.axhspan(75, 115, facecolor='#FFAAA5', alpha=0.3, zorder=1, label='轻度污染 (75-115)')
-    ax.axhspan(115, 150, facecolor='#FF8B94', alpha=0.3, zorder=1, label='中度污染 (115-150)')
-    # 计算图表 y 轴最大值，保证最高的紫色色块能覆盖满
+    ax.axhspan(0, 35, facecolor='#A8E6CF', alpha=0.3, zorder=1, label='Good (0-35)')
+    ax.axhspan(35, 75, facecolor='#FFD3B6', alpha=0.3, zorder=1, label='Moderate (35-75)')
+    ax.axhspan(75, 115, facecolor='#FFAAA5', alpha=0.3, zorder=1, label='Light Pollution (75-115)')
+    ax.axhspan(115, 150, facecolor='#FF8B94', alpha=0.3, zorder=1, label='Moderate-Heavy Pollution (115-150)')
     y_max = max(max_true, episode_df['pred_pm25'].max()) * 1.15
-    ax.axhspan(150, max(250, y_max), facecolor='#8D6298', alpha=0.2, zorder=1, label='重度及以上污染 (>150)')
+    ax.axhspan(150, max(250, y_max), facecolor='#8D6298', alpha=0.2, zorder=1, label='Heavy Pollution (>150)')
 
-    # 设置 Y 轴上限
     ax.set_ylim(0, y_max)
 
-    # 美化 X 轴时间格式
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d\n%H:00'))
-    ax.xaxis.set_major_locator(mdates.DayLocator(interval=1)) # 每天一个大刻度
-    plt.xticks(rotation=0)
+    ax.xaxis.set_major_locator(mdates.DayLocator(interval=1)) 
+    plt.xticks(rotation=0, fontsize=13, weight='bold')
+    plt.yticks(fontsize=13, weight='bold')
 
-    # 设置标签与标题
-    ax.set_ylabel('PM$_{2.5}$ 浓度 ($\\mu g/m^3$)', fontproperties=my_font, fontsize=14)
-    ax.set_xlabel('日期与时间 (Date & Time)', fontproperties=my_font, fontsize=14)
-    ax.grid(True, linestyle=':', alpha=0.6, zorder=2)
+    ax.set_ylabel(r'PM$_{\mathbf{2.5}}$ Concentration ($\boldsymbol{\mu}\mathbf{g}/\mathbf{m}^{\mathbf{3}}$)', fontsize=15, weight='bold')
+    ax.set_xlabel('Date & Time', fontsize=15, weight='bold')
+    ax.grid(True, linestyle='--', alpha=0.6, zorder=2)
     
-    # 调整图例位置，避免遮挡曲线
-    ax.legend(loc='upper left', prop=my_font, ncol=2, framealpha=0.9)
+    # 图例字体加粗与样式优化
+    ax.legend(loc='upper left', prop={'size': 12, 'weight': 'bold'}, ncol=2, framealpha=0.95, edgecolor='gray')
 
     plt.tight_layout()
     
-    save_path = os.path.join(FIG_DIR, f"RF_Time_Series_Capture_{target_site}.png")
+    save_path = os.path.join(FIG_DIR, f"Fig3.7_RF_Time_Series_Capture_{target_site}.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.close()
 
