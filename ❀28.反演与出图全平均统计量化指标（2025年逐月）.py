@@ -36,8 +36,10 @@ PROVINCE_SHP_PATH = "/home/yanchengzhu/Map/GIS/中国_省.shp"
 
 os.makedirs(FIG_DIR, exist_ok=True)
 
-FONT_PATH = f"{BASE_DIR}/fonts/SimHei.ttf"
-my_font = FontProperties(fname=FONT_PATH) if os.path.exists(FONT_PATH) else FontProperties()
+plt.rcParams['font.family'] = 'serif'
+plt.rcParams['font.serif'] = ['Times New Roman', 'Times', 'DejaVu Serif', 'Liberation Serif']
+plt.rcParams['axes.unicode_minus'] = False
+import calendar
 
 TARGET_MONTHS = range(1, 13)
 
@@ -78,7 +80,7 @@ def main():
     original_df['month'] = original_df['date'].dt.month
     original_df['date_str'] = original_df['date'].dt.strftime('%Y%m%d')
     
-    # 将含有 12 个月的小时级真值，在内存里压缩成日均真值，供下游 IDW 和指标计算使用
+    # 将含有 12 个月的小时级真值，压缩成日均真值，供下游 IDW 和指标计算使用
     original_df = original_df.groupby(['site_code', 'lon', 'lat', 'month', 'date_str'])['pm25_hourly'].mean().reset_index()
     original_df.rename(columns={'pm25_hourly': 'pm25_daily'}, inplace=True)
     
@@ -102,7 +104,7 @@ def main():
     best_features = joblib.load(os.path.join(MODEL_DIR, "best_features_list_terrain.pkl"))
 
     print("\n" + "="*80)
-    print("🔥 [3/4] 引擎点火！执行：小时级提取 -> 日均折叠 -> IDW校正 -> 月度聚合")
+    print("🔥 [3/4] 执行：小时级提取 -> 日均折叠 -> IDW校正 -> 月度聚合")
     print("="*80)
     
     fig = plt.figure(figsize=(20, 26), dpi=300) 
@@ -132,12 +134,10 @@ def main():
             # 1. 读取单日小时级数据 (1700万行)
             grid_df = pd.read_parquet(daily_file)
             X_grid = grid_df[best_features].astype('float32')
-            
-            # 🌟 新增：剥离 Pandas 外衣，直接使用底层的 numpy 矩阵，切片时不产生额外内存复制
             X_grid_np = X_grid.values 
             
-            # 2. 全场小时预测 (极速分块版)
-            batch_size = 200000  # 进一步缩减单批次大小至 20 万行，对 GPU 毫无压力
+            # 2. 全场小时预测 
+            batch_size = 200000  # 进一步缩减单批次大小至 20 万行
             preds_list = []
             
             for i in range(0, len(X_grid_np), batch_size):
@@ -276,7 +276,9 @@ def main():
                        c='lightgray', marker='X', s=50, edgecolors='dimgray', linewidths=0.8, 
                        transform=ccrs.PlateCarree(), zorder=6)
         
-        ax.set_title(f'{target_month}月', fontproperties=my_font, fontsize=24, weight='bold', pad=12)
+        month_name = calendar.month_name[target_month]
+        ax.set_title(f'{month_name}', fontsize=24, weight='bold', pad=12)
+        
         gl = ax.gridlines(draw_labels=True, linewidth=0.4, color='gray', alpha=0.5, linestyle='--')
         gl.top_labels = False; gl.right_labels = False
         if idx < 9: gl.bottom_labels = False
@@ -294,34 +296,32 @@ def main():
     if sm_bg is not None:
         cbar_ax1 = fig.add_axes([0.15, 0.06, 0.45, 0.015])
         cbar1 = fig.colorbar(sm_bg, cax=cbar_ax1, orientation='horizontal')
-        cbar1.set_label(r'【背景底图】PM$_{2.5}$ 月均反演预测浓度 ($\mu g/m^3$)', fontproperties=my_font, fontsize=24, weight='bold')
+        cbar1.set_label(r'Predicted Monthly PM$_{\mathbf{2.5}}$ Concentration ($\boldsymbol{\mu}\mathbf{g}/\mathbf{m}^{\mathbf{3}}$)', fontsize=24, weight='bold')
         cbar1.ax.tick_params(labelsize=18)
     
     if sm_scatter is not None:
         cbar_ax2 = fig.add_axes([0.91, 0.16, 0.015, 0.7])
         cbar2 = fig.colorbar(sm_scatter, cax=cbar_ax2, orientation='vertical')
-        cbar2.set_label(r'【圆圈站点】PM$_{2.5}$ 独立真实观测浓度 ($\mu g/m^3$)', fontproperties=my_font, fontsize=24, weight='bold')
+        cbar2.set_label(r'Observed PM$_{\mathbf{2.5}}$ at Independent Test Sites ($\boldsymbol{\mu}\mathbf{g}/\mathbf{m}^{\mathbf{3}}$)', fontsize=24, weight='bold')
         cbar2.ax.tick_params(labelsize=18)
 
     valid_marker = mlines.Line2D([], [], color='white', marker='o', markerfacecolor='white', 
-                                 markeredgecolor='black', markersize=20, label='有效验证站点')
+                                 markeredgecolor='black', markersize=20, label='Valid Test Sites')
     missing_marker = mlines.Line2D([], [], color='white', marker='X', markerfacecolor='lightgray', 
-                                   markeredgecolor='dimgray', markersize=20, label='数据缺失站点')
+                                   markeredgecolor='dimgray', markersize=20, label='Missing Data Sites')
     
     handles_list = [valid_marker, missing_marker]
     
     if os.path.exists(PROVINCE_SHP_PATH):
-        prov_line = mlines.Line2D([], [], color='#222222', linestyle='-', linewidth=4.0, label='省级边界')
+        prov_line = mlines.Line2D([], [], color='#222222', linestyle='-', linewidth=4.0, label='Provincial Boundary')
         handles_list.append(prov_line)
         
     if os.path.exists(CITY_SHP_PATH):
-        city_line = mlines.Line2D([], [], color='dimgray', linestyle='--', linewidth=3.0, label='地级市边界')
+        city_line = mlines.Line2D([], [], color='dimgray', linestyle='--', linewidth=3.0, label='City Boundary')
         handles_list.append(city_line)
 
-    legend_font = FontProperties(fname=FONT_PATH, size=24) if os.path.exists(FONT_PATH) else FontProperties(size=24)
-
     fig.legend(handles=handles_list, loc='center right', 
-               bbox_to_anchor=(0.90, 0.08), prop=legend_font, 
+               bbox_to_anchor=(0.90, 0.08), prop={'family': 'serif', 'size': 24, 'weight': 'bold'}, 
                frameon=True, framealpha=1.0, edgecolor='black', facecolor='whitesmoke',
                borderpad=0.8, labelspacing=0.8, handletextpad=0.6)
 
@@ -330,8 +330,8 @@ def main():
     plt.close()
     
     print("="*80)
-    print("🎉 极度丝滑的等值线填充大图渲染完毕！")
-    print(f"👉 终极完美图路径: {save_path}")
+    print("🎉 等值线填充大图渲染完毕！")
+    print(f"👉 图路径: {save_path}")
     print("="*80)
 
 if __name__ == "__main__":
