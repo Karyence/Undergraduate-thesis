@@ -21,8 +21,8 @@ DATASET_PATH = f"{BASE_DIR}/训练集/YRD_PM25_Hourly_ML_Dataset_2025.parquet"
 OUTPUT_DIR = f"{BASE_DIR}/Results/Figures_残差诊断"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-FONT_PATH = f"{BASE_DIR}/fonts/SimHei.ttf"
-my_font = FontProperties(fname=FONT_PATH) if os.path.exists(FONT_PATH) else FontProperties()
+plt.rcParams['font.family'] = 'serif'
+plt.rcParams['font.serif'] = ['Times New Roman', 'Times', 'DejaVu Serif', 'Liberation Serif']
 plt.rcParams['axes.unicode_minus'] = False
 
 # --- IDW 空间插值函数 ---
@@ -97,7 +97,7 @@ def main():
     # 初始化
     df_test['pred_idw_daily'] = df_test['pred_rf_daily']
 
-    # 逐日执行残差插值 (严格防泄露：仅用 train 残差补充 test)
+    # 逐日执行残差插值 
     for date_str, test_group in df_test.groupby('date_str'):
         train_group = df_train[df_train['date_str'] == date_str]
         if len(train_group) < 5: continue
@@ -137,7 +137,7 @@ def main():
     print(f"【沿海独立测试】纯 RF: {rmse_coast_rf:.2f} -> RF-IDW: {rmse_coast_idw:.2f}")
 
     # ================= 绘图 =================
-    labels = ['全局测试站点\n(All Test Sites)', '山区测试站点\n(DEM ≥ 50m)', '沿海测试站点\n(Lon ≥ 121.0°E)']
+    labels = ['All Test Sites', 'Mountainous Sites\n(DEM $\\geq$ 50m)', 'Coastal Sites\n(Lon $\\geq$ 121.0$^\\circ$E)']
     rf_rmses = [rmse_all_rf, rmse_mt_rf, rmse_coast_rf]
     idw_rmses = [rmse_all_idw, rmse_mt_idw, rmse_coast_idw]
 
@@ -145,15 +145,16 @@ def main():
     width = 0.35
 
     fig, ax = plt.subplots(figsize=(9, 6), dpi=300)
-    ax.bar(x - width/2, rf_rmses, width, label='原始随机森林模型 (RF)', color='#1f77b4', edgecolor='black', alpha=0.85)
-    ax.bar(x + width/2, idw_rmses, width, label='混合残差校正模型 (RF-IDW)', color='#2ca02c', edgecolor='black', alpha=0.85)
+    ax.bar(x - width/2, rf_rmses, width, label='Original Model (RF)', color='#1f77b4', edgecolor='black', alpha=0.85)
+    ax.bar(x + width/2, idw_rmses, width, label='Hybrid Residual Correction (RF-IDW)', color='#2ca02c', edgecolor='black', alpha=0.85)
 
-    ax.set_ylabel(r'模型预测 RMSE ($\mu g/m^3$)', fontproperties=my_font, fontsize=14)
+    ax.set_ylabel(r'Prediction RMSE ($\boldsymbol{\mu}\mathbf{g}/\mathbf{m}^{\mathbf{3}}$)', fontsize=14, weight='bold')
     ax.set_xticks(x)
-    ax.set_xticklabels(labels, fontproperties=my_font, fontsize=13)
-    ax.legend(prop=my_font, fontsize=12, loc='upper right')
+    ax.set_xticklabels(labels, fontsize=13, weight='bold')
+    
+    ax.legend(fontsize=10.5, loc='upper right', edgecolor='gray', framealpha=0.95)
     ax.grid(axis='y', linestyle='--', alpha=0.5)
-    ax.set_ylim(0, max(rf_rmses) * 1.25)
+    ax.set_ylim(0, max(rf_rmses) * 1.35)
 
     for i in range(len(labels)):
         ax.annotate(f'{rf_rmses[i]:.2f}', xy=(x[i] - width/2, rf_rmses[i]), xytext=(0, 3), 
@@ -163,10 +164,10 @@ def main():
         
         diff = rf_rmses[i] - idw_rmses[i]
         if diff > 0:
-            ax.annotate(f'↓ {diff:.2f}', xy=(x[i] + width/2, idw_rmses[i] + 0.8), xytext=(0, 15), 
+            ax.annotate(f'$\\downarrow$ {diff:.2f}', xy=(x[i] + width/2, idw_rmses[i] + 0.8), xytext=(0, 15), 
                         textcoords="offset points", ha='center', va='bottom', fontsize=12, color='red', fontweight='bold')
         elif diff < 0:
-            ax.annotate(f'↑ {abs(diff):.2f}', xy=(x[i] + width/2, idw_rmses[i] + 0.8), xytext=(0, 15), 
+            ax.annotate(f'$\\uparrow$ {abs(diff):.2f}', xy=(x[i] + width/2, idw_rmses[i] + 0.8), xytext=(0, 15), 
                         textcoords="offset points", ha='center', va='bottom', fontsize=12, color='blue', fontweight='bold')
 
     plt.tight_layout()
