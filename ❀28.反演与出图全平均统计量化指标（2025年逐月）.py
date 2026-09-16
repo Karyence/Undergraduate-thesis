@@ -253,10 +253,11 @@ def main():
             sc = ax.scatter(site_stats['lon'].values, site_stats['lat'].values, c=site_stats['obs_mean'].values, cmap='Spectral_r', vmin=10, vmax=100, s=70, alpha=1.0, edgecolors='black', linewidths=1.2, zorder=4)
             if sm_scatter is None: sm_scatter = sc
                 
-        stats_text = f"R²: {m_r2:.2f}\nCoeff: {m_coeff:.2f}\nRMSE: {m_rmse:.1f}\nNMB: {m_nmb:+.1f}%\nNME: {m_nme:.1f}%" if not np.isnan(m_r2) else "真值暂缺"
-        ax.text(0.98, 0.98, stats_text, transform=ax.transAxes, fontsize=16, weight='bold', 
+        stats_text = f"R²: {m_r2:.2f}\nCoeff: {m_coeff:.2f}\nRMSE: {m_rmse:.1f}\nNMB: {m_nmb:+.1f}%\nNME: {m_nme:.1f}%" if not np.isnan(m_r2) else "Missing"
+        ax.text(0.98, 0.98, stats_text, transform=ax.transAxes, fontsize=16, 
+                fontweight='bold', fontfamily='serif', fontname='Times New Roman',
                 verticalalignment='top', horizontalalignment='right', 
-                bbox=dict(boxstyle='round,pad=0.5', facecolor='white', alpha=0.85, edgecolor='gray', linewidth=1.5), zorder=6)
+                bbox=dict(boxstyle='round,pad=0.5', facecolor='white', alpha=0.9, edgecolor='black', linewidth=1.5), zorder=6)
         
         ax.add_feature(cfeature.COASTLINE, linewidth=1.0, edgecolor='black', zorder=5)
         
