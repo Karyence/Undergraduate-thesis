@@ -6,17 +6,11 @@ import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 from pykrige.ok import OrdinaryKriging
 import warnings
-import matplotlib.font_manager as fm
 
 warnings.filterwarnings("ignore")
 
-# 设置中文字体
-font_path = '/home/wangzonghan/bisheshuju/fonts/SimHei.ttf'
-fm.fontManager.addfont(font_path)
-custom_font = fm.FontProperties(fname=font_path)
-font_name = custom_font.get_name()
-
-plt.rcParams['font.sans-serif'] = [font_name]
+plt.rcParams['font.family'] = 'serif'
+plt.rcParams['font.serif'] = ['Times New Roman', 'Times', 'DejaVu Serif', 'Liberation Serif']
 plt.rcParams['axes.unicode_minus'] = False 
 
 # =============================================================================
@@ -26,12 +20,12 @@ OUTPUT_DIR = os.path.expanduser("~/bisheshuju/ERA5_LAND")
 ERA5_DOWN_FILE = os.path.join(OUTPUT_DIR, "ERA5_t2m_1km_downscaled.nc")
 DEM_PATH = os.path.expanduser("~/bisheshuju/GEBCO/GEBCO_2025_YRD_1km.nc")
 
-# 选取 4 个代表性时刻
+# 选取 4 个代表性时刻 
 SCENARIOS = {
-    "深冬寒夜": 338,     # 1月15日 02:00
-    "盛夏午后": 4358,    # 7月1日 14:00
-    "初春正午": 2172,    # 4月1日 12:00
-    "深秋傍晚": 6570     # 10月1日 18:00 
+    "Winter_Night": 338,         # 1月15日 02:00
+    "Summer_Afternoon": 4358,    # 7月1日 14:00
+    "Spring_Noon": 2172,         # 4月1日 12:00
+    "Autumn_Evening": 6570       # 10月1日 18:00 
 }
 
 def extract_era5_coarse_points(t2m_1km_ds, dem_ds, hour_index):
@@ -98,7 +92,6 @@ def main():
     target_lat = dem_ds.lat.values
     h_high = dem_ds['z_high'].clip(min=0)
     
-    # 🌟 新增：计算经纬度范围参数 extent 🌟
     extent_bounds = [target_lon.min(), target_lon.max(), target_lat.min(), target_lat.max()]
     
     os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -125,54 +118,51 @@ def main():
         min_rk, max_rk, mean_rk = np.nanmin(t_rk_1km), np.nanmax(t_rk_1km), np.nanmean(t_rk_1km)
         
         # ==========================================
-        # 绘图部分
+        # 绘图部分 
         # ==========================================
-        TITLE_FS = 16   
-        LABEL_FS = 14   
-        TICK_FS = 12    
+        TITLE_FS = 17   
+        LABEL_FS = 15   
+        TICK_FS = 13    
         
-        fig, axes = plt.subplots(1, 3, figsize=(18, 6)) 
-        
-        suptitle_text = f"气象场景：{scenario_name}  |  时间：{date_str}"
-        fig.suptitle(suptitle_text, fontsize=20, fontweight='bold', y=0.98)
+        fig, axes = plt.subplots(1, 3, figsize=(18, 6), dpi=300) 
         
         vmin = min(min_3step, min_rk)
         vmax = max(max_3step, max_rk)
         
-        # 🌟 修改：加入 extent 参数 🌟
+        # --- 子图 (a) ---
         im0 = axes[0].imshow(t_3step_1km, cmap='RdYlBu_r', origin='lower', vmin=vmin, vmax=vmax, extent=extent_bounds)
-        axes[0].set_title(f"物理三步法降尺度 (Physical 3-Step)\n(Min: {min_3step:.2f}℃)", fontsize=TITLE_FS)
+        axes[0].set_title(f"(a) Physical 3-Step Downscaling\n(Min: {min_3step:.2f}°C)", fontsize=TITLE_FS, weight='bold')
         axes[0].tick_params(labelsize=TICK_FS)
-        cb0 = plt.colorbar(im0, ax=axes[0])
-        cb0.set_label('温度 (℃)', fontsize=LABEL_FS)
+        cb0 = plt.colorbar(im0, ax=axes[0], fraction=0.046, pad=0.04)
+        cb0.set_label('Temperature (°C)', fontsize=LABEL_FS, weight='bold')
         cb0.ax.tick_params(labelsize=TICK_FS)
         
-        # 🌟 修改：加入 extent 参数 🌟
+        # --- 子图 (b) ---
         im1 = axes[1].imshow(t_rk_1km, cmap='RdYlBu_r', origin='lower', vmin=vmin, vmax=vmax, extent=extent_bounds)
-        axes[1].set_title(f"回归克里金插值 (Regression Kriging)\n(Min: {min_rk:.2f}℃)", fontsize=TITLE_FS)
+        axes[1].set_title(f"(b) Regression Kriging\n(Min: {min_rk:.2f}°C)", fontsize=TITLE_FS, weight='bold')
         axes[1].tick_params(labelsize=TICK_FS)
-        cb1 = plt.colorbar(im1, ax=axes[1])
-        cb1.set_label('温度 (℃)', fontsize=LABEL_FS)
+        cb1 = plt.colorbar(im1, ax=axes[1], fraction=0.046, pad=0.04)
+        cb1.set_label('Temperature (°C)', fontsize=LABEL_FS, weight='bold')
         cb1.ax.tick_params(labelsize=TICK_FS)
         
+        # --- 子图 (c) ---
         diff_map = t_3step_1km - t_rk_1km
-        # 🌟 修改：加入 extent 参数 🌟
         im2 = axes[2].imshow(diff_map, cmap='seismic', origin='lower', vmin=-3, vmax=3, extent=extent_bounds)
-        axes[2].set_title("空间差异图\n(三步法 - RK法)", fontsize=TITLE_FS)
+        axes[2].set_title("(c) Spatial Difference\n(3-Step - RK)", fontsize=TITLE_FS, weight='bold')
         axes[2].tick_params(labelsize=TICK_FS)
-        cb2 = plt.colorbar(im2, ax=axes[2])
-        cb2.set_label('温差 (℃)', fontsize=LABEL_FS)
+        cb2 = plt.colorbar(im2, ax=axes[2], fraction=0.046, pad=0.04)
+        cb2.set_label(r'$\Delta$T (°C)', fontsize=LABEL_FS, weight='bold')
         cb2.ax.tick_params(labelsize=TICK_FS)
         
-        # 🌟 新增：为所有子图添加统一的经纬度坐标轴标签 🌟
+        # 统一恢复每个子图的经纬度标签
         for ax in axes:
-            ax.set_xlabel('经度 (°E)', fontsize=LABEL_FS)
-            ax.set_ylabel('纬度 (°N)', fontsize=LABEL_FS)
+            ax.set_xlabel('Longitude (°E)', fontsize=LABEL_FS, weight='bold')
+            ax.set_ylabel('Latitude (°N)', fontsize=LABEL_FS, weight='bold')
         
-        plt.tight_layout(rect=[0, 0, 1, 0.92])
+        plt.tight_layout()
         
-        output_img = os.path.join(OUTPUT_DIR, f"Comparison_{scenario_name}.png")
-        plt.savefig(output_img, dpi=300)
+        output_img = os.path.join(OUTPUT_DIR, f"FigS1_Comparison_{scenario_name}.png")
+        plt.savefig(output_img, dpi=300, bbox_inches='tight')
         plt.close(fig) 
         print(f"📸 图表已保存: {output_img}")
         
