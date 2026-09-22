@@ -11,23 +11,22 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
+plt.rcParams['font.family'] = 'serif'
+plt.rcParams['font.serif'] = ['Times New Roman', 'Times', 'DejaVu Serif', 'Liberation Serif']
+plt.rcParams['axes.unicode_minus'] = False 
+
 # =============================================================================
 # 1. 核心配置区域
 # =============================================================================
 CONF = {
     "GEBCO": "/data/Environment/Landscape/GEBCO_2025.nc",
     "SHP": "/home/yanchengzhu/Map/GIS/YRD.shp",
-    "OUT_NC": os.path.expanduser("~/bisheshuju/GEBCO/GEBCO_2025_YRD_1km.nc"),
-    "OUT_IMG": os.path.expanduser("~/bisheshuju/GEBCO/GEBCO_2025_YRD_1km_Map.png"),
+    "OUT_NC": os.path.expanduser("~/bisheshuju/GEBCO/GEBCO_2025_YRD_1km_with_slope.nc"),
+    "OUT_IMG": os.path.expanduser("~/bisheshuju/GEBCO/FigS2_GEBCO_2025_YRD_1km_Map.png"),
     "RANGE": [114.5, 123.0, 27.0, 35.5], 
     "RES": 0.01,
     "COLORBAR_RANGE": [-500, 1500]  
 }
-
-# 字体加载与路径兼容
-FONT_PATH = os.path.expanduser("~/bisheshuju/fonts/SimHei.ttf")
-if not os.path.exists(FONT_PATH):
-    FONT_PATH = "/home/wangzonghan/bisheshuju/fonts/SimHei.ttf"
 
 # =============================================================================
 # 2. 统计对比工具函数
@@ -71,15 +70,13 @@ def print_comparison_stats(ds_old, ds_new):
 # 3. 空间可视化函数
 # =============================================================================
 def plot_map(ds, gdf, lons, lats, font):
-    """生成带有行政边界与自定义色带的高清地形图"""
     num_x, num_y = ds.sizes['lon'], ds.sizes['lat']
     min_lon, max_lon, min_lat, max_lat = CONF["RANGE"]
     vmin, vmax = CONF["COLORBAR_RANGE"] 
     
-    title_font = font.copy(); title_font.set_size(15); title_font.set_weight('bold')
-    text_font = font.copy(); text_font.set_size(12)
+    TITLE_FS = 15
+    TEXT_FS = 12
 
-    # 自定义地形色带 (海蓝 -> 平原绿 -> 高山棕)
     color_nodes = [
         (0.00, '#0a2342'),  # -500m: 深海深蓝
         (0.24, '#73a5c6'),  # -20m:  近海浅蓝
@@ -100,8 +97,9 @@ def plot_map(ds, gdf, lons, lats, font):
     )
     
     cbar = plt.colorbar(im, ax=ax, shrink=0.8, pad=0.05, orientation='horizontal', location='bottom') 
-    cbar.set_label('陆地海拔高度 (m) / 海洋深度 (<0m)', fontproperties=text_font, fontsize=12)
+    cbar.set_label('Elevation / Bathymetry (m)', fontsize=14, weight='bold')
     cbar.set_ticks(np.arange(vmin, vmax+1, 250))
+    cbar.ax.tick_params(labelsize=12)
 
     ax.add_geometries(gdf.geometry, crs=ccrs.PlateCarree(), facecolor='none', edgecolor='black', linewidth=1.5)
     
@@ -112,20 +110,20 @@ def plot_map(ds, gdf, lons, lats, font):
     gl.top_labels = gl.right_labels = False
     gl.xformatter = LONGITUDE_FORMATTER
     gl.yformatter = LATITUDE_FORMATTER
-    gl.xlabel_style = gl.ylabel_style = {'fontsize': 11, 'weight': 'bold'}
+    gl.xlabel_style = gl.ylabel_style = {'fontsize': 11, 'weight': 'bold', 'family': 'serif'}
     
     ax.plot([min_lon, max_lon, max_lon, min_lon, min_lon], 
             [min_lat, min_lat, max_lat, max_lat, min_lat], 
-            color='red', lw=2.5, alpha=0.9, transform=ccrs.PlateCarree(), label='1km 网格边界')
+            color='red', lw=2.5, alpha=0.9, transform=ccrs.PlateCarree(), label='1 km Grid Boundary')
     
     ax.legend(
         loc='lower left', bbox_to_anchor=(0, 1.01), 
-        prop=text_font, frameon=True, framealpha=1, borderaxespad=0
+        fontsize=TEXT_FS, frameon=True, framealpha=1, borderaxespad=0
     )
 
-    grid_text = f"1km 网格统计:\nX(经度) = {num_x} 个\nY(纬度) = {num_y} 个"
+    grid_text = f"1 km Grid Statistics:\nX (Longitude) = {num_x}\nY (Latitude) = {num_y}"
     ax.text(
-        1.03, 0.0, grid_text, transform=ax.transAxes, fontproperties=text_font, 
+        1.03, 0.0, grid_text, transform=ax.transAxes, fontsize=TEXT_FS, weight='bold',
         ha='left', va='bottom', bbox=dict(boxstyle="round,pad=0.5", facecolor="white", edgecolor="gray", alpha=0.9)
     )
     
@@ -140,14 +138,7 @@ def plot_map(ds, gdf, lons, lats, font):
 # 4. 主控程序
 # =============================================================================
 def main():
-    if os.path.exists(FONT_PATH):
-        font_prop = fm.FontProperties(fname=FONT_PATH, size=12)
-    else:
-        print(f"⚠️ 找不到中文字体，将使用系统默认字体。")
-        font_prop = fm.FontProperties(size=12)
-        
     plt.rcParams['axes.unicode_minus'] = False 
-
     print("🚀 开始处理地形数据...")
     
     ds_raw_full = xr.open_dataset(CONF["GEBCO"], chunks={"lat": 4000, "lon": 4000})
@@ -175,7 +166,7 @@ def main():
 
     print("🎨 正在绘制地形高程分布图...")
     gdf = gpd.read_file(CONF["SHP"]).to_crs("EPSG:4326")
-    plot_map(ds_1km, gdf, new_lon, new_lat, font_prop)
+    plot_map(ds_1km, gdf, new_lon, new_lat, None)
 
 if __name__ == "__main__":
     main()
