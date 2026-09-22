@@ -7,37 +7,27 @@ import geopandas as gpd
 
 warnings.filterwarnings("ignore")
 
+plt.rcParams['font.family'] = 'serif'
+plt.rcParams['font.serif'] = ['Times New Roman', 'Times', 'DejaVu Serif', 'Liberation Serif']
+plt.rcParams['axes.unicode_minus'] = False
+
 # =============================================================================
 # 1. 核心配置
 # =============================================================================
 NC_FILE = os.path.expanduser("~/bisheshuju/LandCover/YRD_LandCover_Fractions_1km_Final.nc")
-OUTPUT_FIG = os.path.expanduser("~/bisheshuju/LandCover/YRD_LandCover_Visualization_with_Boundaries.png")
+OUTPUT_FIG = os.path.expanduser("~/bisheshuju/LandCover/FigS3_YRD_LandCover_Visualization.png")
 SHP_FILE = "/home/yanchengzhu/Map/GIS/长三角.shp"
 
-# 字体加载与多用户路径兼容
-FONT_PATH = os.path.expanduser("~/bisheshuju/fonts/SimHei.ttf")
-if not os.path.exists(FONT_PATH):
-    FONT_PATH = "/home/wangzonghan/bisheshuju/fonts/SimHei.ttf"
-
-if os.path.exists(FONT_PATH):
-    my_font = FontProperties(fname=FONT_PATH)
-else:
-    print(f"⚠️ 找不到字体文件 {FONT_PATH}，中文可能仍会显示为方块！")
-    my_font = FontProperties() 
-
-plt.rcParams['axes.unicode_minus'] = False
-
-# 子图配置映射 (变量名, 颜色映射, 标题)
 PLOT_CONFIG = [
-    ('cropland_frac', 'YlOrBr', '耕地占比 (Cropland)'),      
-    ('forest_frac', 'Greens', '林地占比 (Forest)'),          
-    ('building_frac', 'Reds', '建筑占比 (Building)'),        
-    ('water_frac', 'Blues', '水体占比 (Water)'),             
-    ('traffic_frac', 'Oranges', '交通道路占比 (Traffic)'),   
-    ('barren_frac', 'Greys', '裸地占比 (Barren)'),           
-    ('grassland_frac', 'YlGn', '草地占比 (Grassland)'),      
-    ('shrubland_frac', 'BuGn', '灌木地占比 (Shrubland)'),    
-    ('wetland_frac', 'PuBuGn', '湿地占比 (Wetland)')         
+    ('cropland_frac', 'YlOrBr', '(a) Cropland'),      
+    ('forest_frac', 'Greens', '(b) Forest'),          
+    ('building_frac', 'Reds', '(c) Building'),        
+    ('water_frac', 'Blues', '(d) Water'),             
+    ('traffic_frac', 'Oranges', '(e) Traffic'),   
+    ('barren_frac', 'Greys', '(f) Barren'),           
+    ('grassland_frac', 'YlGn', '(g) Grassland'),      
+    ('shrubland_frac', 'BuGn', '(h) Shrubland'),    
+    ('wetland_frac', 'PuBuGn', '(i) Wetland')         
 ]
 
 # =============================================================================
@@ -85,16 +75,16 @@ def plot_landcover_fractions():
             valid_mask = dataArray.notnull().astype(int)
             ax.contour(ds.lon, ds.lat, valid_mask, levels=[0.5], colors='black', linewidths=0.6, alpha=0.7)
         
-        ax.set_title(title, fontproperties=my_font, fontsize=20, pad=15)
-        ax.set_xlabel('Longitude (°E)', fontsize=16)
-        ax.set_ylabel('Latitude (°N)', fontsize=16)
+        ax.set_title(title, fontsize=18, weight='bold', pad=12)
+        ax.set_xlabel('Longitude (°E)', fontsize=15, weight='bold')
+        ax.set_ylabel('Latitude (°N)', fontsize=15, weight='bold')
         ax.set_aspect('equal')
         
-        ax.tick_params(axis='both', which='major', labelsize=14)
+        ax.tick_params(axis='both', which='major', labelsize=13)
         
         cbar = fig.colorbar(im, ax=ax, orientation='vertical', shrink=0.85, pad=0.04)
-        cbar.set_label('Area Fraction', fontsize=16)
-        cbar.ax.tick_params(labelsize=14) 
+        cbar.set_label('Area Fraction', fontsize=15, weight='bold')
+        cbar.ax.tick_params(labelsize=13) 
 
     plt.tight_layout(h_pad=3.0, w_pad=2.0) 
 
