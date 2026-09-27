@@ -42,7 +42,6 @@ else:
 plt.rcParams['axes.unicode_minus'] = False
 
 def calculate_metrics(obs, pred):
-    """计算用于表格输出的核心统计指标"""
     r2 = r2_score(obs, pred)
     rmse = np.sqrt(mean_squared_error(obs, pred))
     mae = mean_absolute_error(obs, pred)
@@ -122,38 +121,36 @@ def main():
         m, b = np.polyfit(y_true, y_pred, 1)
         ax.plot(y_true, m*y_true + b, color='red', lw=3.0, label=f'Fit: y={m:.2f}x+{b:.2f}')
         
-        # 统计信息框 (完美对齐图4.1：将英文与数字字体强制指定为 Times New Roman)
+        unit_normal = r'$\mu\mathrm{g}/\mathrm{m}^3$'
+        unit_bold = r'$\boldsymbol{\mu}\mathbf{g}/\mathbf{m}^{\mathbf{3}}$'
+        
+        # 统计信息框
         textstr = '\n'.join((
             f'N = {n_samples:,}',
             f'$R^2$ = {r2:.2f}', 
-            f'RMSE = {rmse:.2f} $\\mu g/m^3$',
-            f'MAE = {mae:.2f} $\\mu g/m^3$'
+            f'RMSE = {rmse:.2f} {unit_normal}',
+            f'MAE = {mae:.2f} {unit_normal}'
         ))
         props = dict(boxstyle='round,pad=0.6', facecolor='white', alpha=0.85, edgecolor='gray')
-        # 【关键修改】：去掉 fontproperties=my_font，改用 fontfamily='Times New Roman'
-        ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=TEXT_FS, fontfamily='Times New Roman',
+        ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=TEXT_FS, fontfamily='serif',
                 verticalalignment='top', bbox=props)
         
-        # 标题与标签 
-        ax.set_title(title, loc='left', fontfamily='Times New Roman', fontsize=TITLE_FS, pad=12)
-        ax.set_xlabel('实测 PM$_{2.5}$ 浓度 ($\\mu g/m^3$)', fontproperties=my_font, fontsize=LABEL_FS)
-        ax.set_ylabel('预测 PM$_{2.5}$ 浓度 ($\\mu g/m^3$)', fontproperties=my_font, fontsize=LABEL_FS)
-        
-        # 刻度字号与坐标轴数字字体统一
+        # 标题与标签
+        ax.set_title(title, loc='left', fontfamily='serif', fontsize=TITLE_FS, pad=12, weight='bold')
+        ax.set_xlabel(r'Observed PM$_{\mathbf{2.5}}$ Concentration (' + unit_bold + ')', fontfamily='serif', fontsize=LABEL_FS, weight='bold')
+        ax.set_ylabel(r'Predicted PM$_{\mathbf{2.5}}$ Concentration (' + unit_bold + ')', fontfamily='serif', fontsize=LABEL_FS, weight='bold')
         ax.tick_params(axis='both', which='major', labelsize=TICK_FS)
         for label in ax.get_xticklabels() + ax.get_yticklabels():
-            label.set_fontfamily('Times New Roman')
+            label.set_fontfamily('serif')
             
-        # 图例统一为 Times New Roman
-        ax.legend(loc='lower right', prop={'family': 'Times New Roman', 'size': LEGEND_FS})
+        ax.legend(loc='lower right', prop={'family': 'serif', 'size': LEGEND_FS})
         ax.grid(True, linestyle='--', color='silver', alpha=0.6)
         
-        # 独立色标设定与色标数字字体统一
         cbar = plt.colorbar(h[3], ax=ax, fraction=0.046, pad=0.04)
-        cbar.set_label('数据点密度 (个数)', fontproperties=my_font, fontsize=LABEL_FS)
+        cbar.set_label('Data Point Density (Count)', fontfamily='serif', fontsize=LABEL_FS, weight='bold')
         cbar.ax.tick_params(labelsize=TICK_FS)
         for label in cbar.ax.get_yticklabels():
-            label.set_fontfamily('Times New Roman')
+            label.set_fontfamily('serif')
         
         return h[3]
 
