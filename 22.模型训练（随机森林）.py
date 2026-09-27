@@ -106,9 +106,10 @@ def plot_spatial_distribution(train_df, test_df):
     min_lat, max_lat = 27.0, 35.5
 
     ds = xr.open_dataset(GEBCO_PATH)
-    elev_yrd = ds['DEM'].sel(lon=slice(min_lon, max_lon), lat=slice(min_lat, max_lat))
+    elev_var = 'DEM' if 'DEM' in ds else 'z_high'
+    elev_yrd = ds[elev_var].sel(lon=slice(min_lon, max_lon), lat=slice(min_lat, max_lat))
     if len(elev_yrd.lat) == 0:
-        elev_yrd = ds['DEM'].sel(lon=slice(min_lon, max_lon), lat=slice(max_lat, min_lat))
+        elev_yrd = ds[elev_var].sel(lon=slice(min_lon, max_lon), lat=slice(max_lat, min_lat))
 
     lon_grid, lat_grid = np.meshgrid(elev_yrd.lon, elev_yrd.lat)
     mesh = ax.pcolormesh(lon_grid, lat_grid, elev_yrd.values, 
@@ -116,7 +117,7 @@ def plot_spatial_distribution(train_df, test_df):
                          transform=ccrs.PlateCarree(), shading='auto', zorder=1)
     
     cbar = plt.colorbar(mesh, ax=ax, orientation='horizontal', pad=0.06, aspect=40)
-    cbar.set_label('陆地海拔高度 (m) / 海洋深度 (<0m)', fontproperties=my_font, fontsize=12)
+    cbar.set_label('Land Elevation (m) / Ocean Depth (<0m)', fontfamily='serif', fontsize=12, weight='bold')
     ax.set_extent([min_lon, max_lon, min_lat, max_lat], crs=ccrs.PlateCarree())
     
     ax.add_feature(cfeature.COASTLINE, linewidth=1.2, edgecolor='black', zorder=2)
@@ -146,20 +147,20 @@ def plot_spatial_distribution(train_df, test_df):
     ax.scatter(test_loc['lon'], test_loc['lat'], c='red', s=220, marker='*', 
                 edgecolors='darkred', linewidths=1.2, transform=ccrs.PlateCarree(), zorder=6)
 
-    text_str = "1km 网格统计:\nX(经度) = 851 个\nY(纬度) = 851 个"
+    text_str = "1 km Grid Statistics:\nX (Longitude) = 851\nY (Latitude) = 851"
     props = dict(boxstyle='round,pad=0.6', facecolor='white', edgecolor='black', alpha=1.0)
-    ax.text(1.04, 0.38, text_str, transform=ax.transAxes, fontsize=12, fontproperties=my_font,
+    ax.text(1.04, 0.38, text_str, transform=ax.transAxes, fontsize=12, fontfamily='serif',
             verticalalignment='bottom', horizontalalignment='left', bbox=props, zorder=10)
 
-    red_box_line = mlines.Line2D([], [], color='red', linewidth=3, label='1km 网格边界')
+    red_box_line = mlines.Line2D([], [], color='red', linewidth=3, label='1 km Grid Boundary')
     train_marker = mlines.Line2D([], [], color='none', marker='o', markerfacecolor='darkgray',
-                                 markeredgecolor='black', markersize=8, label='建模站点\n(Training & Validation)')
+                                 markeredgecolor='black', markersize=8, label='Modeling Sites\n(Training & Validation)')
     test_marker = mlines.Line2D([], [], color='none', marker='*', markerfacecolor='red',
-                                markeredgecolor='darkred', markersize=14, label='独立测试站点\n(Hold-out Test)')
+                                markeredgecolor='darkred', markersize=14, label='Independent Test Sites\n(Hold-out Test)')
 
     leg = ax.legend(handles=[red_box_line, train_marker, test_marker], loc='lower left',
-                    bbox_to_anchor=(1.04, 0.05), prop=my_font, framealpha=1.0, 
-                    edgecolor='black', borderaxespad=0., labelspacing=1.0)
+                    bbox_to_anchor=(1.04, 0.05), prop={'family': 'serif', 'size': 11}, 
+                    framealpha=1.0, edgecolor='black', borderaxespad=0., labelspacing=1.0)
     leg.set_zorder(10)
 
     fig_dir = os.path.join(OUTPUT_DIR, "Figures_随机森林")
