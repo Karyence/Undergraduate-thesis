@@ -17,12 +17,13 @@ df_test = pd.read_csv(test_error_path, sep='\t')
 
 # 绘图
 plt.figure(figsize=(10, 6), dpi=300)
-plt.plot(df_learn['iter'], df_learn['RMSE'], label='训练集 (Train RMSE)', color='#1f77b4', linewidth=2)
-plt.plot(df_test['iter'], df_test['RMSE'], label='验证集 (Validation RMSE)', color='#ff7f0e', linewidth=2, linestyle='--')
-
-plt.xlabel('迭代次数 (Iterations)', fontproperties=my_font, fontsize=14)
-plt.ylabel('均方根误差 RMSE ($\\mu g/m^3$)', fontproperties=my_font, fontsize=14)
-plt.legend(prop=my_font, fontsize=12)
+plt.plot(df_learn['iter'], df_learn['RMSE'], label='Training Set', color='#1f77b4', linewidth=2)
+plt.plot(df_test['iter'], df_test['RMSE'], label='Validation Set', color='#ff7f0e', linewidth=2, linestyle='--')
+plt.xlabel('Iterations', fontfamily='serif', fontsize=14, weight='bold')
+plt.ylabel(r'RMSE ($\boldsymbol{\mu}\mathbf{g}/\mathbf{m}^{\mathbf{3}}$)', fontfamily='serif', fontsize=14, weight='bold')
+plt.legend(prop={'family': 'serif', 'size': 12})
+plt.xticks(fontfamily='serif', fontsize=12)
+plt.yticks(fontfamily='serif', fontsize=12)
 plt.grid(True, linestyle='--', color='silver', alpha=0.6)
 
 # 保存图片
