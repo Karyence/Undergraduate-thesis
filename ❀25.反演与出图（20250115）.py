@@ -85,7 +85,7 @@ def main():
     ).reset_index(drop=True)
     test_sites_list = test_sites_df['site_code'].tolist()
     
-    # 保存完整的独立测试站底图，用于排查缺测
+    # 保存完整的独立测试站底图
     test_sites_coords = test_sites_df[['site_code', 'lon', 'lat']].copy() 
 
     # 提取测试站点的【小时级】真实值，然后聚合为【日均真实值】
@@ -174,27 +174,41 @@ def main():
                    c='lightgray', marker='X', s=100, edgecolors='dimgray', linewidths=1.0, 
                    transform=ccrs.PlateCarree(), zorder=6)
 
-    # 右下角量化统计信息文本框
-    stats_text = f"当日有效站点: {len(test_day_df)}\nME 偏差均值: {avg_err:+.2f}\nRMSE: {rmse_val:.2f}" if not test_day_df.empty else "真值暂缺"
-    ax.text(0.98, 0.02, stats_text, transform=ax.transAxes, fontproperties=my_font, fontsize=16, weight='bold',
-            verticalalignment='bottom', horizontalalignment='right',
-            bbox=dict(boxstyle='round,pad=0.4', facecolor='white', alpha=0.85, edgecolor='none'), zorder=7)
+    # ==========================================
+    # 最终细节优化部分：取消图注框内文字的加粗，使其与单位字体统一
+    # ==========================================
 
-    # 调整边距 (已清理重复代码)
+    # 定义常规正体单位（用于统计框）和加粗正体单位（用于色标轴标签）
+    unit_normal = r'$\mu\mathrm{g}/\mathrm{m}^3$'
+    unit_bold = r'$\boldsymbol{\mu}\mathbf{g}/\mathbf{m}^{\mathbf{3}}$'
+
+    # 右下角量化统计信息文本框 (使用 unit_normal)
+    stats_text = f"Valid Test Sites: {len(test_day_df)}\nME: {avg_err:+.2f} {unit_normal}\nRMSE: {rmse_val:.2f} {unit_normal}" if not test_day_df.empty else "Observed Data Missing"
+    
+    # 绘制统计文本框 (将 weight='bold' 修改为 weight='normal')
+    ax.text(0.98, 0.02, stats_text, transform=ax.transAxes, fontfamily='serif', fontsize=12, weight='normal',
+            verticalalignment='bottom', horizontalalignment='right',
+            bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.85, edgecolor='none'), zorder=7)
+
+    # 调整边距
     plt.subplots_adjust(left=0.05, right=0.86, bottom=0.15, top=0.92)
 
-    # 1. 下方主色标 (水平色标) - 【明确标示为底图】
+    # 1. 下方主色标 (水平色标) - 背景底图
     cbar_ax = fig.add_axes([0.15, 0.05, 0.55, 0.02])
     cbar1 = plt.colorbar(scatter_bg, cax=cbar_ax, orientation='horizontal')
-    cbar1.set_label(r'【背景底图】长三角 1km 预测日均 PM$_{2.5}$ 浓度 ($\mu g/m^3$)', fontproperties=my_font, fontsize=18, weight='bold')
+    cbar1.set_label(r'Predicted Daily PM$_{\mathbf{2.5}}$ Concentration (' + unit_bold + ')', fontfamily='serif', fontsize=16, weight='bold')
     cbar1.ax.tick_params(labelsize=14)
+    for label in cbar1.ax.get_xticklabels():
+        label.set_fontfamily('serif')
     
-    # 2. 右侧偏差色标 (垂直色标) - 【明确标示为圆圈】
+    # 2. 右侧偏差色标 (垂直色标) - 散点偏差 
     if not test_day_df.empty:
         cbar_ax2 = fig.add_axes([0.88, 0.22, 0.02, 0.58])
         cbar2 = plt.colorbar(scatter_err, cax=cbar_ax2, orientation='vertical')
-        cbar2.set_label(r'【圆圈站点】独立测试站点偏差：预测值 - 观测值 ($\mu g/m^3$)', fontproperties=my_font, fontsize=18, weight='bold')
+        cbar2.set_label(r'Prediction Bias at Independent Test Sites (' + unit_bold + ')', fontfamily='serif', fontsize=16, weight='bold')
         cbar2.ax.tick_params(labelsize=14)
+        for label in cbar2.ax.get_yticklabels():
+            label.set_fontfamily('serif')
     
     # 3. 坐标轴经纬度刻度
     gl = ax.gridlines(draw_labels=True, linewidth=0.5, color='gray', alpha=0.3, linestyle='--')
@@ -204,22 +218,21 @@ def main():
     gl.yformatter = LATITUDE_FORMATTER
     gl.xlocator = mticker.FixedLocator([115.5, 117.0, 118.5, 120.0, 121.5]) 
     gl.ylocator = mticker.FixedLocator([28.5, 30.0, 31.5, 33.0, 34.5])
-    gl.xlabel_style = {'size': 14, 'color': 'black', 'weight': 'bold'}
-    gl.ylabel_style = {'size': 14, 'color': 'black', 'weight': 'bold'}
+    gl.xlabel_style = {'size': 14, 'color': 'black', 'weight': 'bold', 'family': 'serif'}
+    gl.ylabel_style = {'size': 14, 'color': 'black', 'weight': 'bold', 'family': 'serif'}
 
-    # 4. 全局统一图例框 
-    valid_marker = mlines.Line2D([], [], color='white', marker='o', markerfacecolor='white', markeredgecolor='black', markersize=10, label='有效验证站点')
-    missing_marker = mlines.Line2D([], [], color='white', marker='X', markerfacecolor='lightgray', markeredgecolor='dimgray', markersize=10, label='数据缺失站点')
+    # 4. 全局统一图例框
+    valid_marker = mlines.Line2D([], [], color='white', marker='o', markerfacecolor='white', markeredgecolor='black', markersize=10, label='Valid Test Sites')
+    missing_marker = mlines.Line2D([], [], color='white', marker='X', markerfacecolor='lightgray', markeredgecolor='dimgray', markersize=10, label='Missing Data Sites')
     handles_list = [valid_marker, missing_marker]
-    if os.path.exists(PROVINCE_SHP_PATH):
-        handles_list.append(mlines.Line2D([], [], color='#222222', linestyle='-', linewidth=2.0, label='省级边界'))
-    if os.path.exists(CITY_SHP_PATH):
-        handles_list.append(mlines.Line2D([], [], color='dimgray', linestyle='--', linewidth=1.5, label='地级市边界'))
-        
-    legend_font = FontProperties(fname=FONT_PATH, size=15, weight='bold') if os.path.exists(FONT_PATH) else FontProperties(size=15, weight='bold')
     
+    if os.path.exists(PROVINCE_SHP_PATH):
+        handles_list.append(mlines.Line2D([], [], color='#222222', linestyle='-', linewidth=2.0, label='Provincial Boundary'))
+    if os.path.exists(CITY_SHP_PATH):
+        handles_list.append(mlines.Line2D([], [], color='dimgray', linestyle='--', linewidth=1.5, label='City Boundary'))
+        
     fig.legend(handles=handles_list, loc='lower right', bbox_to_anchor=(0.98, 0.02), 
-               prop=legend_font, frameon=True, framealpha=1.0, 
+               prop={'family': 'serif', 'size': 13, 'weight': 'bold'}, frameon=True, framealpha=1.0, 
                edgecolor='black', facecolor='white')
     
     save_path = os.path.join(FIG_DIR, f"Spatial_Daily_{TARGET_DATE.replace('-', '')}.png")
