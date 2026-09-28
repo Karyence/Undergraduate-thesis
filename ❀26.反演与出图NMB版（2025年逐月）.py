@@ -208,8 +208,11 @@ def main():
                        c='lightgray', marker='X', s=50, edgecolors='dimgray', linewidths=0.8, 
                        transform=ccrs.PlateCarree(), zorder=6)
         
+        # 使用英文月份和 Serif 字体
+        month_names = ['January', 'February', 'March', 'April', 'May', 'June', 
+                       'July', 'August', 'September', 'October', 'November', 'December']
         valid_count = len(valid_site_codes)
-        ax.set_title(f'{target_month}月 (n={valid_count})', fontproperties=my_font, fontsize=24, weight='bold', pad=12)
+        ax.set_title(f'{month_names[target_month - 1]} (n={valid_count})', fontfamily='serif', fontsize=24, weight='bold', pad=12)
         
         gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, linewidth=0.4, color='gray', alpha=0.5, linestyle='--')
         gl.top_labels = False; gl.right_labels = False
@@ -225,47 +228,54 @@ def main():
     
     plt.subplots_adjust(left=0.06, right=0.88, bottom=0.16, top=0.95, wspace=0.08, hspace=0.12)
     
+    # 定义标准加粗正体单位
+    unit_bold = r'$\boldsymbol{\mu}\mathbf{g}/\mathbf{m}^{\mathbf{3}}$'
+    
     if sm_bg is not None:
         cbar_ax1 = fig.add_axes([0.15, 0.06, 0.45, 0.015]) 
         cbar1 = fig.colorbar(sm_bg, cax=cbar_ax1, orientation='horizontal')
-        cbar1.set_label(r'【背景底图】长三角 1km 预测月均 PM$_{2.5}$ 浓度 ($\mu g/m^3$)', fontproperties=my_font, fontsize=24, weight='bold')
+        cbar1.set_label(r'Predicted Monthly PM$_{\mathbf{2.5}}$ Concentration (' + unit_bold + ')', fontfamily='serif', fontsize=24, weight='bold')
         cbar1.ax.tick_params(labelsize=18)
+        for label in cbar1.ax.get_xticklabels():
+            label.set_fontfamily('serif')
 
     if sm_err is not None:
         # 右侧色标底端对齐抬高后的主图 (0.16)
         cbar_ax2 = fig.add_axes([0.91, 0.16, 0.015, 0.7])
         cbar2 = fig.colorbar(sm_err, cax=cbar_ax2, orientation='vertical')
-        cbar2.set_label(r'【圆圈站点】独立测试站点 NMB 偏差 (%)', fontproperties=my_font, fontsize=24, weight='bold')
+        cbar2.set_label(r'NMB at Independent Test Sites (%)', fontfamily='serif', fontsize=24, weight='bold')
         cbar2.ax.tick_params(labelsize=18)
+        for label in cbar2.ax.get_yticklabels():
+            label.set_fontfamily('serif')
 
+    # 图例全英文替换
     valid_marker = mlines.Line2D([], [], color='white', marker='o', markerfacecolor='white', 
-                                 markeredgecolor='black', markersize=20, label='有效验证站点')
+                                 markeredgecolor='black', markersize=20, label='Valid Test Sites')
     missing_marker = mlines.Line2D([], [], color='white', marker='X', markerfacecolor='lightgray', 
-                                   markeredgecolor='dimgray', markersize=20, label='数据缺失站点')
+                                   markeredgecolor='dimgray', markersize=20, label='Missing Data Sites')
     
     handles_list = [valid_marker, missing_marker]
     
     if os.path.exists(PROVINCE_SHP_PATH):
-        prov_line = mlines.Line2D([], [], color='#222222', linestyle='-', linewidth=4.0, label='省级边界')
+        prov_line = mlines.Line2D([], [], color='#222222', linestyle='-', linewidth=4.0, label='Provincial Boundary')
         handles_list.append(prov_line)
         
     if os.path.exists(CITY_SHP_PATH):
-        city_line = mlines.Line2D([], [], color='dimgray', linestyle='--', linewidth=3.0, label='地级市边界')
+        city_line = mlines.Line2D([], [], color='dimgray', linestyle='--', linewidth=3.0, label='City Boundary')
         handles_list.append(city_line)
 
-    legend_font = FontProperties(fname=FONT_PATH, size=24) if os.path.exists(FONT_PATH) else FontProperties(size=24)
-
+    # 图例字体统一使用 Serif
     fig.legend(handles=handles_list, loc='center right', 
-               bbox_to_anchor=(0.90, 0.08), prop=legend_font, 
+               bbox_to_anchor=(0.90, 0.08), prop={'family': 'serif', 'size': 22, 'weight': 'bold'}, 
                frameon=True, framealpha=1.0, edgecolor='black', facecolor='whitesmoke',
                borderpad=0.8, labelspacing=0.8, handletextpad=0.6)
 
-    save_path = os.path.join(FIG_DIR, "Spatial_Monthly_NMB_2025_12Months.png")
+    save_path = os.path.join(FIG_DIR, "Spatial_Monthly_NMB_2025_12Month.png")
     plt.savefig(save_path, bbox_inches='tight')
     plt.close()
     
     print("="*70)
-    print(f"🎉 恭喜！12个月份的 NMB 标准化平均偏差全矩阵大组图已生成！\n👉 图片保存至: {save_path}")
+    print(f"🎉 恭喜！12个月份的 NMB 全英文学术大组图已生成！\n👉 图片保存至: {save_path}")
     print("="*70)
 
 if __name__ == "__main__":
