@@ -88,12 +88,14 @@ def spatial_stratified_split(df):
     return train_df, test_df
 
 # =============================================================================
-# 3. 绘制站点空间分布图 
+# 3. 绘制站点空间分布图
 # =============================================================================
 def plot_spatial_distribution(train_df, test_df):
     print("\n" + "="*70)
     print("🗺️ [3/5] 生成站点空间分布可视化")
     print("="*70)
+    
+    from matplotlib.colors import LinearSegmentedColormap
     
     GEBCO_PATH = "/home/wangzonghan/bisheshuju/GEBCO/GEBCO_2025_YRD_1km_with_slope.nc" 
     train_loc = train_df[['site_code', 'lon', 'lat']].drop_duplicates()
@@ -101,6 +103,7 @@ def plot_spatial_distribution(train_df, test_df):
     
     fig = plt.figure(figsize=(13, 10), dpi=300)
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
+    ax.set_facecolor('white')
     
     min_lon, max_lon = 114.5, 123
     min_lat, max_lat = 27.0, 35.5
@@ -111,41 +114,57 @@ def plot_spatial_distribution(train_df, test_df):
     if len(elev_yrd.lat) == 0:
         elev_yrd = ds[elev_var].sel(lon=slice(min_lon, max_lon), lat=slice(max_lat, min_lat))
 
+    # 1. 将高程 <= 0 的海洋区域掩膜为 NaN（显示为纯白），并截取 terrain 的陆地色段 (0.25~1.0)
+    elev_masked = np.where(elev_yrd.values <= 0, np.nan, elev_yrd.values)
+    terrain_base = plt.cm.get_cmap('terrain')
+    land_cmap = LinearSegmentedColormap.from_list(
+        'land_terrain', terrain_base(np.linspace(0.25, 1.0, 256))
+    )
+    land_cmap.set_bad(color='white')
+
     lon_grid, lat_grid = np.meshgrid(elev_yrd.lon, elev_yrd.lat)
-    mesh = ax.pcolormesh(lon_grid, lat_grid, elev_yrd.values, 
-                         cmap='terrain', vmin=-500, vmax=1500, 
+    mesh = ax.pcolormesh(lon_grid, lat_grid, elev_masked, 
+                         cmap=land_cmap, vmin=0, vmax=1500, 
                          transform=ccrs.PlateCarree(), shading='auto', zorder=1)
     
     cbar = plt.colorbar(mesh, ax=ax, orientation='horizontal', pad=0.06, aspect=40)
-    cbar.set_label('Land Elevation (m) / Ocean Depth (<0m)', fontfamily='serif', fontsize=12, weight='bold')
+    cbar.set_label('Land Elevation (m)', fontfamily='serif', fontsize=12, weight='bold')
+    cbar.set_ticks([0, 200, 400, 600, 800, 1000, 1200, 1400])
+    for l in cbar.ax.xaxis.get_ticklabels():
+        l.set_fontfamily('serif')
+        l.set_fontsize(11)
+
     ax.set_extent([min_lon, max_lon, min_lat, max_lat], crs=ccrs.PlateCarree())
     
-    ax.add_feature(cfeature.COASTLINE, linewidth=1.2, edgecolor='black', zorder=2)
+    # 2. 海岸线与省界线样式对齐（海岸线黑色实线，省界深灰虚线）
+    ax.add_feature(cfeature.COASTLINE.with_scale('10m'), linewidth=1.0, edgecolor='black', zorder=2)
     try:
         provinces = cfeature.NaturalEarthFeature(category='cultural', name='admin_1_states_provinces_lines', scale='10m', facecolor='none')
-        ax.add_feature(provinces, edgecolor='black', linewidth=0.8, zorder=3)
+        ax.add_feature(provinces, edgecolor='dimgray', linestyle='--', linewidth=0.8, zorder=3)
     except Exception:
         pass
     
-    gl = ax.gridlines(draw_labels=True, linewidth=0, color='none') 
+    # 3. 经纬网与坐标轴标签样式对齐
+    gl = ax.gridlines(draw_labels=True, linewidth=0.6, color='gray', alpha=0.5, linestyle='--') 
     gl.top_labels = False
     gl.right_labels = False
     gl.xformatter = LONGITUDE_FORMATTER
     gl.yformatter = LATITUDE_FORMATTER
     gl.xlocator = mticker.FixedLocator([115, 116, 117, 118, 119, 120, 121, 122])
     gl.ylocator = mticker.FixedLocator([28.5, 30.0, 31.5, 33.0, 34.5])
-    gl.xlabel_style = {'size': 13, 'weight': 'bold', 'color': 'black'}
-    gl.ylabel_style = {'size': 13, 'weight': 'bold', 'color': 'black'}
+    gl.xlabel_style = {'size': 12, 'family': 'serif', 'color': 'black'}
+    gl.ylabel_style = {'size': 12, 'family': 'serif', 'color': 'black'}
     
     rect = Rectangle((min_lon, min_lat), max_lon - min_lon, max_lat - min_lat, 
                      linewidth=3, edgecolor='red', facecolor='none', 
                      transform=ccrs.PlateCarree(), zorder=4)
     ax.add_patch(rect)
 
+    # 4. 其余部分
     ax.scatter(train_loc['lon'], train_loc['lat'], c='darkgray', s=50, alpha=0.9, 
-                edgecolors='black', linewidths=0.8, transform=ccrs.PlateCarree(), zorder=5)
+               edgecolors='black', linewidths=0.8, transform=ccrs.PlateCarree(), zorder=5)
     ax.scatter(test_loc['lon'], test_loc['lat'], c='red', s=220, marker='*', 
-                edgecolors='darkred', linewidths=1.2, transform=ccrs.PlateCarree(), zorder=6)
+               edgecolors='darkred', linewidths=1.2, transform=ccrs.PlateCarree(), zorder=6)
 
     text_str = "1 km Grid Statistics:\nX (Longitude) = 851\nY (Latitude) = 851"
     props = dict(boxstyle='round,pad=0.6', facecolor='white', edgecolor='black', alpha=1.0)
