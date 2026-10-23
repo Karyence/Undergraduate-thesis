@@ -114,16 +114,15 @@ def plot_spatial_distribution(train_df, test_df):
     if len(elev_yrd.lat) == 0:
         elev_yrd = ds[elev_var].sel(lon=slice(min_lon, max_lon), lat=slice(max_lat, min_lat))
 
-    # 1. 将高程 <= 0 的海洋区域掩膜为 NaN（显示为纯白），并截取 terrain 的陆地色段 (0.25~1.0)
-    elev_masked = np.where(elev_yrd.values <= 0, np.nan, elev_yrd.values)
+    # 1. 不把陆地 <=0 设为 NaN，而是将 <=0 截断为 0（保证太湖和苏北低洼平原显示为绿色）
+    elev_land = np.maximum(elev_yrd.values, 0)
     terrain_base = plt.cm.get_cmap('terrain')
     land_cmap = LinearSegmentedColormap.from_list(
         'land_terrain', terrain_base(np.linspace(0.25, 1.0, 256))
     )
-    land_cmap.set_bad(color='white')
 
     lon_grid, lat_grid = np.meshgrid(elev_yrd.lon, elev_yrd.lat)
-    mesh = ax.pcolormesh(lon_grid, lat_grid, elev_masked, 
+    mesh = ax.pcolormesh(lon_grid, lat_grid, elev_land, 
                          cmap=land_cmap, vmin=0, vmax=1500, 
                          transform=ccrs.PlateCarree(), shading='auto', zorder=1)
     
@@ -136,8 +135,9 @@ def plot_spatial_distribution(train_df, test_df):
 
     ax.set_extent([min_lon, max_lon, min_lat, max_lat], crs=ccrs.PlateCarree())
     
-    # 2. 海岸线与省界线样式对齐（海岸线黑色实线，省界深灰虚线）
-    ax.add_feature(cfeature.COASTLINE.with_scale('10m'), linewidth=1.0, edgecolor='black', zorder=2)
+    # 2. 直接用 Cartopy 的 10m 精度 OCEAN 图层将海岸线右侧的海洋涂成纯白色 (zorder=2)
+    ax.add_feature(cfeature.OCEAN.with_scale('10m'), facecolor='white', edgecolor='none', zorder=2)
+    ax.add_feature(cfeature.COASTLINE.with_scale('10m'), linewidth=1.0, edgecolor='black', zorder=3)
     try:
         provinces = cfeature.NaturalEarthFeature(category='cultural', name='admin_1_states_provinces_lines', scale='10m', facecolor='none')
         ax.add_feature(provinces, edgecolor='dimgray', linestyle='--', linewidth=0.8, zorder=3)
