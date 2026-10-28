@@ -136,16 +136,16 @@ def main():
     agg_df_daily['pred_idw_daily'] = np.clip(agg_df_daily['pred_idw_daily'], 0, 300)
 
     # 多区域评估与成图
-    rmse_all_rf = calc_rmse(agg_df_daily['pm25_hourly'].values, agg_df_daily['pred_hourly'].values)
-    rmse_all_idw = calc_rmse(agg_df_daily['pm25_hourly'].values, agg_df_daily['pred_idw_daily'].values)
+    rmse_all_rf = round(calc_rmse(agg_df_daily['pm25_hourly'].values, agg_df_daily['pred_hourly'].values), 2)
+    rmse_all_idw = round(calc_rmse(agg_df_daily['pm25_hourly'].values, agg_df_daily['pred_idw_daily'].values), 2)
     
     df_mt = agg_df_daily[agg_df_daily['DEM'] >= 50]
-    rmse_mt_rf = calc_rmse(df_mt['pm25_hourly'].values, df_mt['pred_hourly'].values)
-    rmse_mt_idw = calc_rmse(df_mt['pm25_hourly'].values, df_mt['pred_idw_daily'].values)
+    rmse_mt_rf = round(calc_rmse(df_mt['pm25_hourly'].values, df_mt['pred_hourly'].values), 2)
+    rmse_mt_idw = round(calc_rmse(df_mt['pm25_hourly'].values, df_mt['pred_idw_daily'].values), 2)
     
     df_coast = agg_df_daily[agg_df_daily['lon'] >= 121.0]
-    rmse_coast_rf = calc_rmse(df_coast['pm25_hourly'].values, df_coast['pred_hourly'].values)
-    rmse_coast_idw = calc_rmse(df_coast['pm25_hourly'].values, df_coast['pred_idw_daily'].values)
+    rmse_coast_rf = round(calc_rmse(df_coast['pm25_hourly'].values, df_coast['pred_hourly'].values), 2)
+    rmse_coast_idw = round(calc_rmse(df_coast['pm25_hourly'].values, df_coast['pred_idw_daily'].values), 2)
 
     print(f"\n✅ 诊断结果：")
     print(f"【全局独立测试】(Sites={agg_df_daily['site_code'].nunique()}, N={len(agg_df_daily)}) 纯 RF: {rmse_all_rf:.2f} -> RF-IDW: {rmse_all_idw:.2f} (Δ={rmse_all_rf-rmse_all_idw:.2f}, {(rmse_all_idw-rmse_all_rf)/rmse_all_rf*100:.1f}%)")
