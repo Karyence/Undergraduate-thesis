@@ -125,17 +125,25 @@ def generate_academic_figures(agg_df_daily, comp_df_hourly, output_dir):
                             zorder=20, 
                             bbox=dict(boxstyle='round,pad=0.15', facecolor='white', edgecolor='none', alpha=0.85)) 
     
-    # === 子图 (a): 季节对比 ===
+    # 为日均表 agg_df_daily (N = 14,808) 生成季节字段
+    agg_df_daily['date'] = pd.to_datetime(agg_df_daily['date'])
+    agg_df_daily['season'] = (agg_df_daily['date'].dt.month % 12 // 3 + 1).astype(int)
+
+    # === 子图 (a): 季节对比 (基于日均尺度 agg_df_daily, N = 14,808) ===
     season_names = ['Winter', 'Spring', 'Summer', 'Autumn']
     rmse_agg_s, rmse_dir_s, rmse_diff_s = [], [], []
-    for s_idx in [1, 2, 3, 4]:
-        s_df = comp_df_hourly[comp_df_hourly['season'] == s_idx]
+    print("\n📊 [图 3.2a 日均尺度 - 分季节统计结果 (总 N = 14,808)]:")
+    for s_idx, s_name in zip([1, 2, 3, 4], season_names):
+        s_df = agg_df_daily[agg_df_daily['season'] == s_idx]
         _, r_a, _, _ = calc_metrics(s_df['pm25_hourly'].values, s_df['pred_hourly'].values)
         _, r_d, _, _ = calc_metrics(s_df['pm25_hourly'].values, s_df['Pred_Direct_Daily'].values)
         r_a, r_d = round(r_a, 2), round(r_d, 2)
+        diff = round(r_d - r_a, 2)
+        pct = (r_a - r_d) / r_d * 100
         rmse_agg_s.append(r_a)
         rmse_dir_s.append(r_d)
-        rmse_diff_s.append(round(r_d - r_a, 2)) 
+        rmse_diff_s.append(diff)
+        print(f"  - {s_name:<8} (n={len(s_df):>4}): Direct={r_d:.2f} -> Hourly-Agg={r_a:.2f} | ΔRMSE={diff:.2f} ({pct:.1f}%)") 
         
     x = np.arange(len(season_names))
     width = 0.35
@@ -164,21 +172,26 @@ def generate_academic_figures(agg_df_daily, comp_df_hourly, output_dir):
     lines_2, labels_2 = ax1_twin.get_legend_handles_labels()
     ax1.legend(lines_1 + lines_2, labels_1 + labels_2, loc='upper center', prop={'size':11}, frameon=True)
 
-    # === 子图 (b): 污染等级对比 ===
+    # === 子图 (b): 污染等级对比 (基于日均尺度 agg_df_daily, N = 14,808) ===
     bins = [0, 35, 75, 1000]
     labels_level = ['Low\n(<35)', 'Moderate\n(35–75)', 'High\n($\geq$75)']
-    comp_df_hourly['Level'] = pd.cut(comp_df_hourly['pm25_hourly'], bins=bins, labels=labels_level, right=False)
+    agg_df_daily['Level'] = pd.cut(agg_df_daily['pm25_hourly'], bins=bins, labels=labels_level, right=False)
     
     rmse_agg_l, rmse_dir_l, rmse_diff_l = [], [], []
+    print("\n📊 [图 3.2b 日均尺度 - 分日均浓度等级统计结果 (总 N = 14,808)]:")
     for lvl in labels_level:
-        l_df = comp_df_hourly[comp_df_hourly['Level'] == lvl]
+        l_df = agg_df_daily[agg_df_daily['Level'] == lvl]
         if len(l_df) > 0:
             _, r_a, _, _ = calc_metrics(l_df['pm25_hourly'].values, l_df['pred_hourly'].values)
             _, r_d, _, _ = calc_metrics(l_df['pm25_hourly'].values, l_df['Pred_Direct_Daily'].values)
             r_a, r_d = round(r_a, 2), round(r_d, 2)
+            diff = round(r_d - r_a, 2)
+            pct = (r_a - r_d) / r_d * 100
             rmse_agg_l.append(r_a)
             rmse_dir_l.append(r_d)
-            rmse_diff_l.append(round(r_d - r_a, 2)) 
+            rmse_diff_l.append(diff)
+            lvl_clean = lvl.replace('\n', ' ')
+            print(f"  - {lvl_clean:<20} (n={len(l_df):>5}): Direct={r_d:.2f} -> Hourly-Agg={r_a:.2f} | ΔRMSE={diff:.2f} ({pct:.1f}%)") 
             
     x_l = np.arange(len(labels_level))
     
@@ -206,7 +219,12 @@ def generate_academic_figures(agg_df_daily, comp_df_hourly, output_dir):
         ax2_twin.annotate(f'+{txt:.2f}', (x_l[i], rmse_diff_l[i]), textcoords="offset points", xytext=(0,10), ha='center', color='red', fontweight='bold', zorder=20)
 
     for i, txt in enumerate(rmse_diff_s):
-        ax1_twin.annotate(f'+{txt:.2f}', (x[i], rmse_diff_s[i]), textcoords="offset points", xytext=(0,10), ha='center', color='red', fontweight='bold', zorder=20)
+        if i == 2:  # Summer (第3个点)：放在红色菱形正下方，无白框
+            ax1_twin.annotate(f'+{txt:.2f}', (x[i], rmse_diff_s[i]), textcoords="offset points", 
+                              xytext=(0, -12), ha='center', va='top', color='red', fontweight='bold', zorder=20)
+        else:       # 其余季节：保持在红色菱形正上方
+            ax1_twin.annotate(f'+{txt:.2f}', (x[i], rmse_diff_s[i]), textcoords="offset points", 
+                              xytext=(0, 10), ha='center', va='bottom', color='red', fontweight='bold', zorder=20)
 
     lines_1, labels_1 = ax2.get_legend_handles_labels()
     lines_2, labels_2 = ax2_twin.get_legend_handles_labels()
