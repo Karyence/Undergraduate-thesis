@@ -132,9 +132,10 @@ def generate_academic_figures(agg_df_daily, comp_df_hourly, output_dir):
         s_df = comp_df_hourly[comp_df_hourly['season'] == s_idx]
         _, r_a, _, _ = calc_metrics(s_df['pm25_hourly'].values, s_df['pred_hourly'].values)
         _, r_d, _, _ = calc_metrics(s_df['pm25_hourly'].values, s_df['Pred_Direct_Daily'].values)
+        r_a, r_d = round(r_a, 2), round(r_d, 2)
         rmse_agg_s.append(r_a)
         rmse_dir_s.append(r_d)
-        rmse_diff_s.append(r_d - r_a) 
+        rmse_diff_s.append(round(r_d - r_a, 2)) 
         
     x = np.arange(len(season_names))
     width = 0.35
@@ -165,7 +166,7 @@ def generate_academic_figures(agg_df_daily, comp_df_hourly, output_dir):
 
     # === 子图 (b): 污染等级对比 ===
     bins = [0, 35, 75, 1000]
-    labels_level = ['Good\n(<35)', 'Light Pollution\n(35-75)', 'Moderate-Heavy Pollution\n($\geq$75)']
+    labels_level = ['Low\n(<35)', 'Moderate\n(35–75)', 'High\n($\geq$75)']
     comp_df_hourly['Level'] = pd.cut(comp_df_hourly['pm25_hourly'], bins=bins, labels=labels_level, right=False)
     
     rmse_agg_l, rmse_dir_l, rmse_diff_l = [], [], []
@@ -174,9 +175,10 @@ def generate_academic_figures(agg_df_daily, comp_df_hourly, output_dir):
         if len(l_df) > 0:
             _, r_a, _, _ = calc_metrics(l_df['pm25_hourly'].values, l_df['pred_hourly'].values)
             _, r_d, _, _ = calc_metrics(l_df['pm25_hourly'].values, l_df['Pred_Direct_Daily'].values)
+            r_a, r_d = round(r_a, 2), round(r_d, 2)
             rmse_agg_l.append(r_a)
             rmse_dir_l.append(r_d)
-            rmse_diff_l.append(r_d - r_a) 
+            rmse_diff_l.append(round(r_d - r_a, 2)) 
             
     x_l = np.arange(len(labels_level))
     
