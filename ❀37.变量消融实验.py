@@ -100,8 +100,8 @@ def run_ablation_experiments(train_df, test_df, base_features):
         
         results.append({
             'Experiment': setup['desc'],
-            'RMSE': rmse,
-            'R2': r2
+            'RMSE': round(rmse, 2),
+            'R2': round(r2, 3)
         })
         
         del model, X_tr, X_te
