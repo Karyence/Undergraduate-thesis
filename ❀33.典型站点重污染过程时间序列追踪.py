@@ -130,7 +130,7 @@ def main():
     print(f"   -> 期间最高浓度: {max_true:.1f} μg/m³")
 
     # =============================================================================
-    # 4. 绘制时间序列图
+    # 4. 绘制时间序列图 
     # =============================================================================
     print("\n🎨 [4/4] 正在绘制动态时间序列追踪图...")
     fig, ax = plt.subplots(figsize=(15, 6), dpi=300)
@@ -140,13 +140,7 @@ def main():
     ax.plot(episode_df['datetime'], episode_df['pred_pm25'], 
             color='#D9383A', linewidth=2.5, linestyle='--', label='Predicted (RF)', zorder=5)
 
-    ax.axhspan(0, 35, facecolor='#A8E6CF', alpha=0.3, zorder=1, label='Good (0-35)')
-    ax.axhspan(35, 75, facecolor='#FFD3B6', alpha=0.3, zorder=1, label='Moderate (35-75)')
-    ax.axhspan(75, 115, facecolor='#FFAAA5', alpha=0.3, zorder=1, label='Light Pollution (75-115)')
-    ax.axhspan(115, 150, facecolor='#FF8B94', alpha=0.3, zorder=1, label='Moderate-Heavy Pollution (115-150)')
     y_max = max(max_true, episode_df['pred_pm25'].max()) * 1.15
-    ax.axhspan(150, max(250, y_max), facecolor='#8D6298', alpha=0.2, zorder=1, label='Heavy Pollution (>150)')
-
     ax.set_ylim(0, y_max)
 
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d\n%H:00'))
@@ -158,8 +152,8 @@ def main():
     ax.set_xlabel('Date & Time', fontsize=15, weight='bold')
     ax.grid(True, linestyle='--', alpha=0.6, zorder=2)
     
-    # 图例字体加粗与样式优化
-    ax.legend(loc='upper left', prop={'size': 12, 'weight': 'bold'}, ncol=2, framealpha=0.95, edgecolor='gray')
+    # 图例仅保留 Observed 与 Predicted (RF) 两条线
+    ax.legend(loc='upper left', prop={'size': 13, 'weight': 'bold'}, framealpha=0.95, edgecolor='gray')
 
     plt.tight_layout()
     
