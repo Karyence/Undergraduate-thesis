@@ -216,7 +216,8 @@ def generate_academic_figures(agg_df_daily, comp_df_hourly, output_dir):
     add_top_level_labels(ax2, ax2_twin, bars2_dir)
     
     for i, txt in enumerate(rmse_diff_l):
-        ax2_twin.annotate(f'+{txt:.2f}', (x_l[i], rmse_diff_l[i]), textcoords="offset points", xytext=(0,10), ha='center', color='red', fontweight='bold', zorder=20)
+        offset = (0, 10) if i == 0 else (-22, 8)
+        ax2_twin.annotate(f'+{txt:.2f}', (x_l[i], rmse_diff_l[i]), textcoords="offset points", xytext=offset, ha='center', color='red', fontweight='bold', zorder=20)
 
     for i, txt in enumerate(rmse_diff_s):
         if i == 2:  # Summer (第3个点)：放在红色菱形正下方，无白框
