@@ -22,6 +22,7 @@ warnings.filterwarnings("ignore")
 
 plt.rcParams["font.family"] = "serif"
 plt.rcParams["font.serif"] = ["Times New Roman", "Times", "DejaVu Serif", "Liberation Serif"]
+plt.rcParams["mathtext.fontset"] = "stix"
 plt.rcParams["axes.unicode_minus"] = False
 
 # =============================================================================
@@ -319,9 +320,36 @@ def main():
                 ax.add_feature(prov, zorder=3)
             except Exception:
                 pass
-        ax.set_title(title, fontsize=14, weight="bold", pad=10)
-        cb = plt.colorbar(sc, ax=ax, orientation="horizontal", fraction=0.046, pad=0.06)
-        cb.set_label(r"$\Delta\mathrm{PM}_{2.5}$ ($\mu\mathrm{g}/\mathrm{m}^3$)", fontsize=12, weight="bold")
+        # 1. 添加与论文其它地图一致的经纬度网格与加粗坐标刻度
+        gl = ax.gridlines(
+            crs=ccrs.PlateCarree(),
+            draw_labels=True,
+            linewidth=0.5,
+            color="gray",
+            alpha=0.4,
+            linestyle="--",
+            zorder=5,
+        )
+        gl.top_labels = False
+        gl.right_labels = False
+        gl.xlabel_style = {"size": 12, "weight": "bold", "family": "serif"}
+        gl.ylabel_style = {"size": 12, "weight": "bold", "family": "serif"}
+
+        # 2. 标题字号与间距微调（与正文其它双子图对齐）
+        ax.set_title(title, fontsize=15, weight="bold", pad=12)
+
+        # 3. Colorbar 刻度加粗 + 底部标签全加粗
+        cb = plt.colorbar(sc, ax=ax, orientation="horizontal", fraction=0.046, pad=0.07)
+        cb.ax.tick_params(labelsize=12)
+        for l in cb.ax.xaxis.get_ticklabels():
+            l.set_weight("bold")
+            l.set_family("serif")
+        cb.set_label(
+            r"$\boldsymbol{\Delta}\mathbf{PM}_{\mathbf{2.5}}$ ($\boldsymbol{\mu}\mathbf{g}/\mathbf{m}^{\mathbf{3}}$)",
+            fontsize=14,
+            weight="bold",
+            labelpad=6,
+        )
 
     plt.tight_layout()
     fig_path = os.path.join(OUTPUT_DIR, "Fig_EP_Annual_Winter_Pathway_Difference.png")
