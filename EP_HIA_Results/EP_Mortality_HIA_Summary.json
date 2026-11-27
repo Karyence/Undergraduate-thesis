@@ -1,0 +1,159 @@
+{
+  "Metadata": {
+    "Study_Year": 2025,
+    "Evaluated_Days": 365,
+    "Total_Population": 335308.96875,
+    "Total_Population_Millions": 0.33530896875,
+    "Exposure_Window": "2-day moving average (lag 0-1)",
+    "Baseline_Mortality_Source": "2025 Provincial Statistical Communiques (per 1,000 residents), National 8.04/1000 fallback",
+    "Provincial_Rates_Per_1000": {
+      "上海": 6.61,
+      "江苏": 7.8,
+      "浙江": 6.54,
+      "安徽": 8.67,
+      "江西": 7.51,
+      "河南": 8.39,
+      "山东": 8.21,
+      "福建": 6.89,
+      "湖北": 8.86
+    }
+  },
+  "Results": {
+    "Liu_2019_AllCause": {
+      "Citation": "Liu et al. (2019), NEJM 381, 705-715 (652 cities, all-cause, lag 0-1)",
+      "Scenarios": {
+        "WHO_15": {
+          "Counterfactual_C0_ugm3": 15.0,
+          "Annual_Hourly_to_Daily_Deaths": 34.194501239017164,
+          "Annual_Direct_Daily_Deaths": 30.87317295135002,
+          "Annual_Diff_Hourly_minus_Daily": 3.321328287667143,
+          "Annual_Diff_pct": 10.757975193871053,
+          "Annual_Hourly_per_100k": 10.197908325116092,
+          "Annual_Direct_per_100k": 9.207380603758462,
+          "Winter_Hourly_to_Daily_Deaths": 16.674778789079404,
+          "Winter_Direct_Daily_Deaths": 15.409462794723,
+          "Winter_Diff_Hourly_minus_Daily": 1.2653159943564045,
+          "Winter_Diff_pct": 8.211292056136536,
+          "Annual_Hourly_95UI": [
+            29.73100362643497,
+            38.63932623505795
+          ],
+          "Annual_Direct_95UI": [
+            26.8402025241081,
+            34.890178150218844
+          ],
+          "Annual_Diff_95UI": [
+            2.8908011023268685,
+            3.7491480848391063
+          ],
+          "Winter_Diff_95UI": [
+            1.1025903548411993,
+            1.42663022864199
+          ]
+        },
+        "GB_75": {
+          "Counterfactual_C0_ugm3": 75.0,
+          "Annual_Hourly_to_Daily_Deaths": 0.8231405764457159,
+          "Annual_Direct_Daily_Deaths": 0.5928350734578076,
+          "Annual_Diff_Hourly_minus_Daily": 0.2303055029879083,
+          "Annual_Diff_pct": 38.84815748916706,
+          "Annual_Hourly_per_100k": 0.24548719335313512,
+          "Annual_Direct_per_100k": 0.1768026294279692,
+          "Winter_Hourly_to_Daily_Deaths": 0.6830575343477369,
+          "Winter_Direct_Daily_Deaths": 0.5028696847664889,
+          "Winter_Diff_Hourly_minus_Daily": 0.180187849581248,
+          "Winter_Diff_pct": 35.83191730177959,
+          "Annual_Hourly_95UI": [
+            0.7152129421098548,
+            0.9307615584310074
+          ],
+          "Annual_Direct_95UI": [
+            0.5150676793023341,
+            0.6703928709199934
+          ],
+          "Annual_Diff_95UI": [
+            0.20014526280752065,
+            0.26036868751101394
+          ],
+          "Winter_Diff_95UI": [
+            0.15660323488496763,
+            0.20369269824769332
+          ]
+        },
+        "Zero_0": {
+          "Counterfactual_C0_ugm3": 0.0,
+          "Annual_Hourly_to_Daily_Deaths": 59.73958482986176,
+          "Annual_Direct_Daily_Deaths": 56.33136017804819,
+          "Annual_Diff_Hourly_minus_Daily": 3.408224651813569,
+          "Annual_Diff_pct": 6.050314853113954,
+          "Annual_Hourly_per_100k": 17.81628002751172,
+          "Annual_Direct_per_100k": 16.799836994532583,
+          "Winter_Hourly_to_Daily_Deaths": 23.019719414507556,
+          "Winter_Direct_Daily_Deaths": 21.767230079888797,
+          "Winter_Diff_Hourly_minus_Daily": 1.2524893346187582,
+          "Winter_Diff_pct": 5.754013395466241,
+          "Annual_Hourly_95UI": [
+            51.95888537074062,
+            67.48255207393045
+          ],
+          "Annual_Direct_95UI": [
+            48.98877252171251,
+            63.64007101495194
+          ],
+          "Annual_Diff_95UI": [
+            2.970112849028105,
+            3.842481058978507
+          ],
+          "Winter_Diff_95UI": [
+            1.0928789949414544,
+            1.410276480969852
+          ]
+        }
+      }
+    },
+    "Chen_2017_China272": {
+      "Citation": "Chen et al. (2017), AJRCCM 196, 73-81 (272 Chinese cities, non-accidental, lag 0-1)",
+      "Scenarios": {
+        "WHO_15": {
+          "Counterfactual_C0_ugm3": 15.0,
+          "Annual_Hourly_to_Daily_Deaths": 11.182519913218542,
+          "Annual_Direct_Daily_Deaths": 10.090528206476366,
+          "Annual_Diff_Hourly_minus_Daily": 1.091991706742176,
+          "Annual_Diff_pct": 10.821947913899168,
+          "Annual_Hourly_per_100k": 3.3349898020640234,
+          "Annual_Direct_per_100k": 3.0093224896706157,
+          "Winter_Hourly_to_Daily_Deaths": 5.465564757673433,
+          "Winter_Direct_Daily_Deaths": 5.047050944905859,
+          "Winter_Diff_Hourly_minus_Daily": 0.41851381276757404,
+          "Winter_Diff_pct": 8.29224466596662
+        },
+        "GB_75": {
+          "Counterfactual_C0_ugm3": 75.0,
+          "Annual_Hourly_to_Daily_Deaths": 0.2682606300544087,
+          "Annual_Direct_Daily_Deaths": 0.1931333553072863,
+          "Annual_Diff_Hourly_minus_Daily": 0.07512727474712241,
+          "Annual_Diff_pct": 38.899171314862,
+          "Annual_Hourly_per_100k": 0.08000401273322896,
+          "Annual_Direct_per_100k": 0.05759862494202559,
+          "Winter_Hourly_to_Daily_Deaths": 0.2226410161186638,
+          "Winter_Direct_Daily_Deaths": 0.16383846172420546,
+          "Winter_Diff_Hourly_minus_Daily": 0.058802554394458334,
+          "Winter_Diff_pct": 35.890567926255656
+        },
+        "Zero_0": {
+          "Counterfactual_C0_ugm3": 0.0,
+          "Annual_Hourly_to_Daily_Deaths": 19.56983053414406,
+          "Annual_Direct_Daily_Deaths": 18.44213351932392,
+          "Annual_Diff_Hourly_minus_Daily": 1.1276970148201393,
+          "Annual_Diff_pct": 6.1147860882718525,
+          "Annual_Hourly_per_100k": 5.836357615812822,
+          "Annual_Direct_per_100k": 5.5000418235379875,
+          "Winter_Hourly_to_Daily_Deaths": 7.567008444583913,
+          "Winter_Direct_Daily_Deaths": 7.149881504454211,
+          "Winter_Diff_Hourly_minus_Daily": 0.41712694012970264,
+          "Winter_Diff_pct": 5.83403990499482
+        }
+      }
+    }
+  }
+}
