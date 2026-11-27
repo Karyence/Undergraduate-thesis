@@ -24,89 +24,89 @@
       "Scenarios": {
         "WHO_15": {
           "Counterfactual_C0_ugm3": 15.0,
-          "Annual_Hourly_to_Daily_Deaths": 34.194501239017164,
+          "Annual_Hourly_to_Daily_Deaths": 34.194501229396046,
           "Annual_Direct_Daily_Deaths": 30.87317295135002,
-          "Annual_Diff_Hourly_minus_Daily": 3.321328287667143,
-          "Annual_Diff_pct": 10.757975193871053,
-          "Annual_Hourly_per_100k": 10.197908325116092,
+          "Annual_Diff_Hourly_minus_Daily": 3.3213282780460247,
+          "Annual_Diff_pct": 10.757975162707693,
+          "Annual_Hourly_per_100k": 10.197908322246763,
           "Annual_Direct_per_100k": 9.207380603758462,
-          "Winter_Hourly_to_Daily_Deaths": 16.674778789079404,
+          "Winter_Hourly_to_Daily_Deaths": 16.674778792761,
           "Winter_Direct_Daily_Deaths": 15.409462794723,
-          "Winter_Diff_Hourly_minus_Daily": 1.2653159943564045,
-          "Winter_Diff_pct": 8.211292056136536,
+          "Winter_Diff_Hourly_minus_Daily": 1.265315998038,
+          "Winter_Diff_pct": 8.211292080028318,
           "Annual_Hourly_95UI": [
-            29.73100362643497,
-            38.63932623505795
+            29.731003618104356,
+            38.63932622414157
           ],
           "Annual_Direct_95UI": [
             26.8402025241081,
             34.890178150218844
           ],
           "Annual_Diff_95UI": [
-            2.8908011023268685,
-            3.7491480848391063
+            2.890801093996256,
+            3.7491480739227256
           ],
           "Winter_Diff_95UI": [
-            1.1025903548411993,
-            1.42663022864199
+            1.1025903580726446,
+            1.426630232762875
           ]
         },
         "GB_75": {
           "Counterfactual_C0_ugm3": 75.0,
-          "Annual_Hourly_to_Daily_Deaths": 0.8231405764457159,
+          "Annual_Hourly_to_Daily_Deaths": 0.8231405870790333,
           "Annual_Direct_Daily_Deaths": 0.5928350734578076,
-          "Annual_Diff_Hourly_minus_Daily": 0.2303055029879083,
-          "Annual_Diff_pct": 38.84815748916706,
-          "Annual_Hourly_per_100k": 0.24548719335313512,
+          "Annual_Diff_Hourly_minus_Daily": 0.23030551362122564,
+          "Annual_Diff_pct": 38.84815928280542,
+          "Annual_Hourly_per_100k": 0.2454871965243349,
           "Annual_Direct_per_100k": 0.1768026294279692,
-          "Winter_Hourly_to_Daily_Deaths": 0.6830575343477369,
+          "Winter_Hourly_to_Daily_Deaths": 0.6830575428222837,
           "Winter_Direct_Daily_Deaths": 0.5028696847664889,
-          "Winter_Diff_Hourly_minus_Daily": 0.180187849581248,
-          "Winter_Diff_pct": 35.83191730177959,
+          "Winter_Diff_Hourly_minus_Daily": 0.18018785805579485,
+          "Winter_Diff_pct": 35.831918987016756,
           "Annual_Hourly_95UI": [
-            0.7152129421098548,
-            0.9307615584310074
+            0.7152129513529252,
+            0.9307615704494511
           ],
           "Annual_Direct_95UI": [
             0.5150676793023341,
             0.6703928709199934
           ],
           "Annual_Diff_95UI": [
-            0.20014526280752065,
-            0.26036868751101394
+            0.20014527205059107,
+            0.2603686995294576
           ],
           "Winter_Diff_95UI": [
-            0.15660323488496763,
-            0.20369269824769332
+            0.15660324225186684,
+            0.20369270782570714
           ]
         },
         "Zero_0": {
           "Counterfactual_C0_ugm3": 0.0,
-          "Annual_Hourly_to_Daily_Deaths": 59.73958482986176,
+          "Annual_Hourly_to_Daily_Deaths": 59.73958481951825,
           "Annual_Direct_Daily_Deaths": 56.33136017804819,
-          "Annual_Diff_Hourly_minus_Daily": 3.408224651813569,
-          "Annual_Diff_pct": 6.050314853113954,
-          "Annual_Hourly_per_100k": 17.81628002751172,
+          "Annual_Diff_Hourly_minus_Daily": 3.4082246414700563,
+          "Annual_Diff_pct": 6.0503148347520455,
+          "Annual_Hourly_per_100k": 17.81628002442695,
           "Annual_Direct_per_100k": 16.799836994532583,
-          "Winter_Hourly_to_Daily_Deaths": 23.019719414507556,
+          "Winter_Hourly_to_Daily_Deaths": 23.019719418185677,
           "Winter_Direct_Daily_Deaths": 21.767230079888797,
-          "Winter_Diff_Hourly_minus_Daily": 1.2524893346187582,
-          "Winter_Diff_pct": 5.754013395466241,
+          "Winter_Diff_Hourly_minus_Daily": 1.2524893382968791,
+          "Winter_Diff_pct": 5.754013412363755,
           "Annual_Hourly_95UI": [
-            51.95888537074062,
-            67.48255207393045
+            51.95888536177084,
+            67.48255206221205
           ],
           "Annual_Direct_95UI": [
             48.98877252171251,
             63.64007101495194
           ],
           "Annual_Diff_95UI": [
-            2.970112849028105,
-            3.842481058978507
+            2.970112840058327,
+            3.842481047260108
           ],
           "Winter_Diff_95UI": [
-            1.0928789949414544,
-            1.410276480969852
+            1.0928789981738483,
+            1.4102764850817593
           ]
         }
       }
@@ -116,42 +116,42 @@
       "Scenarios": {
         "WHO_15": {
           "Counterfactual_C0_ugm3": 15.0,
-          "Annual_Hourly_to_Daily_Deaths": 11.182519913218542,
+          "Annual_Hourly_to_Daily_Deaths": 11.182519910139842,
           "Annual_Direct_Daily_Deaths": 10.090528206476366,
-          "Annual_Diff_Hourly_minus_Daily": 1.091991706742176,
-          "Annual_Diff_pct": 10.821947913899168,
-          "Annual_Hourly_per_100k": 3.3349898020640234,
+          "Annual_Diff_Hourly_minus_Daily": 1.091991703663476,
+          "Annual_Diff_pct": 10.821947883388376,
+          "Annual_Hourly_per_100k": 3.334989801145855,
           "Annual_Direct_per_100k": 3.0093224896706157,
-          "Winter_Hourly_to_Daily_Deaths": 5.465564757673433,
+          "Winter_Hourly_to_Daily_Deaths": 5.465564758936727,
           "Winter_Direct_Daily_Deaths": 5.047050944905859,
-          "Winter_Diff_Hourly_minus_Daily": 0.41851381276757404,
-          "Winter_Diff_pct": 8.29224466596662
+          "Winter_Diff_Hourly_minus_Daily": 0.4185138140308684,
+          "Winter_Diff_pct": 8.292244690996968
         },
         "GB_75": {
           "Counterfactual_C0_ugm3": 75.0,
-          "Annual_Hourly_to_Daily_Deaths": 0.2682606300544087,
+          "Annual_Hourly_to_Daily_Deaths": 0.2682606335274925,
           "Annual_Direct_Daily_Deaths": 0.1931333553072863,
-          "Annual_Diff_Hourly_minus_Daily": 0.07512727474712241,
-          "Annual_Diff_pct": 38.899171314862,
-          "Annual_Hourly_per_100k": 0.08000401273322896,
+          "Annual_Diff_Hourly_minus_Daily": 0.07512727822020623,
+          "Annual_Diff_pct": 38.899173113144755,
+          "Annual_Hourly_per_100k": 0.0800040137690151,
           "Annual_Direct_per_100k": 0.05759862494202559,
-          "Winter_Hourly_to_Daily_Deaths": 0.2226410161186638,
+          "Winter_Hourly_to_Daily_Deaths": 0.22264101888733875,
           "Winter_Direct_Daily_Deaths": 0.16383846172420546,
-          "Winter_Diff_Hourly_minus_Daily": 0.058802554394458334,
-          "Winter_Diff_pct": 35.890567926255656
+          "Winter_Diff_Hourly_minus_Daily": 0.05880255716313329,
+          "Winter_Diff_pct": 35.89056961613661
         },
         "Zero_0": {
           "Counterfactual_C0_ugm3": 0.0,
-          "Annual_Hourly_to_Daily_Deaths": 19.56983053414406,
+          "Annual_Hourly_to_Daily_Deaths": 19.56983053080815,
           "Annual_Direct_Daily_Deaths": 18.44213351932392,
-          "Annual_Diff_Hourly_minus_Daily": 1.1276970148201393,
-          "Annual_Diff_pct": 6.1147860882718525,
-          "Annual_Hourly_per_100k": 5.836357615812822,
+          "Annual_Diff_Hourly_minus_Daily": 1.12769701148423,
+          "Annual_Diff_pct": 6.114786070183331,
+          "Annual_Hourly_per_100k": 5.8363576148179455,
           "Annual_Direct_per_100k": 5.5000418235379875,
-          "Winter_Hourly_to_Daily_Deaths": 7.567008444583913,
+          "Winter_Hourly_to_Daily_Deaths": 7.567008445854068,
           "Winter_Direct_Daily_Deaths": 7.149881504454211,
-          "Winter_Diff_Hourly_minus_Daily": 0.41712694012970264,
-          "Winter_Diff_pct": 5.83403990499482
+          "Winter_Diff_Hourly_minus_Daily": 0.4171269413998573,
+          "Winter_Diff_pct": 5.834039922759516
         }
       }
     }
