@@ -1,0 +1,2 @@
+NC pop sum: 234571760.0 max: 29896.927734375
+Parquet unique cells: 724201
